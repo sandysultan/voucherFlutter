@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:voucher/sales/sales.dart';
@@ -63,27 +66,30 @@ class SalesView extends StatelessWidget {
       builder: (context, state) {
         if (state is SalesLoaded) {
           final items = state.kiosks;
-
+          // var languageCode2 = Localizations.localeOf(context).;
+          var formatter = DateFormat('dd MMMM yyyy hh:mm:ss',);
           return ListView.separated(
-            padding: const EdgeInsets.only(bottom: 100),
             physics: const AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final item = items[index];
-              final days = item.sales?.isNotEmpty==true?item.sales![0].date.difference(DateTime.now()).inDays:0;
+              final days = item.sales?.isNotEmpty==true?DateTime.now().difference(item.sales![0].date.toLocal()).inDays:0;
+              // Logger().d('timezone ' + DateTime.now().timeZoneName);
               return ListTile(
                 onTap: (){
-                  // Navigator.of(context).push<void>(
-                  //   SalesEdit.route(item),
-                  // );
+                  //todo
                 },
                 title: Text(
                   item.kioskName + ' (' + item.id.toString() + ')'
                 ),
                 subtitle: Text(days>0?days.toString() + " day(s)":""),
-                trailing: InkWell(onTap: (){
-                  Navigator.of(context).push<void>(
+                // subtitle: Text(formatter.format(item.createdAt)),
+                trailing: InkWell(onTap: () async {
+                  var result = await Navigator.of(context).push<bool?>(
                     SalesEdit.route(item),
                   );
+                  if(result!=null && result==true){
+                    context.read<SalesBloc>().add(SalesRefresh(groupName));
+                  }
                 }, child: const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Icon(Icons.add,color: Colors.blue,),

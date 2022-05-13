@@ -14,11 +14,13 @@ class Kiosk{
   final String? founder;
   final String? whatsapp;
   final double kioskShare;
+  final int powerCost;
+  final DateTime createdAt;
   final List<Sales>? sales;
 
   Kiosk({required this.kioskName,required this.id, this.latitude,
     this.longitude,this.photo,required this.status,
-    this.founder,this.whatsapp,required this.kioskShare,this.sales,
+    this.founder,this.whatsapp,required this.kioskShare,this.sales,required this.powerCost,required this.createdAt,
 
   });
 

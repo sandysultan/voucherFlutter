@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
@@ -23,8 +24,9 @@ class LoginCubit extends Cubit<LoginState> {
       }else{
         emit(const LoginFailed('Login Failed'));
       }
-    } on Exception catch (e) {
+    } on Exception catch (e,stack) {
       logger.e(e);
+      FirebaseCrashlytics.instance.recordError(e, stack);
       emit(LoginFailed(e.toString()));
     }
   }
