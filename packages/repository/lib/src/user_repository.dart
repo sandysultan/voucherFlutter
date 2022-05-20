@@ -8,6 +8,6 @@ part 'user_repository.g.dart';
 abstract class UserRepository{
   factory UserRepository(Dio dio,{String baseUrl}) = _UserRepository;
 
-  @GET('/user/{email}/roles_and_groups')
-  Future<UserRolesResponse?> rolesAndGroups(@Path('email') String email);
+  @GET('/user/{uid}/roles_and_groups')
+  Future<UserRolesResponse?> rolesAndGroups(@Path('uid') String uid);
 }

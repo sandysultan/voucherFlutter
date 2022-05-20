@@ -23,3 +23,13 @@ class RoleLoaded extends HomeState {
 class EmptyRole extends HomeState {
 
 }
+
+class AppBarClicked extends HomeState {
+
+  final int idAction;
+
+  const AppBarClicked(this.idAction);
+
+  @override
+  List<Object> get props => [idAction];
+}

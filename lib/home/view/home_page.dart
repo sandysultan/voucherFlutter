@@ -10,6 +10,9 @@ import 'package:voucher/user/view/user_page.dart';
 
 import '../home.dart';
 
+const int actionSortByName=0;
+const int actionSortByDays=1;
+
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
@@ -24,13 +27,15 @@ class HomePage extends StatelessWidget {
     return FutureBuilder<String>(
       future: FirebaseAuth.instance.currentUser?.getIdToken(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState==ConnectionState.done) {
+        if (snapshot.connectionState == ConnectionState.done) {
           return BlocProvider(
             create: (context) => HomeBloc(snapshot.data!),
             child: const HomeView(),
           );
         } else {
-          return const Center(child: CircularProgressIndicator(),);
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
       },
     );
@@ -47,15 +52,17 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
+    logger.d('uid: '+ FirebaseAuth.instance.currentUser!.uid);
     context
         .read<HomeBloc>()
-        .add(LoadRolesAndGroups(FirebaseAuth.instance.currentUser!.email!));
+        .add(LoadRolesAndGroups(FirebaseAuth.instance.currentUser!.uid));
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<HomeBloc, HomeState>(
+      buildWhen: (previous,current)=>current is RoleLoaded || current is EmptyRole,
       listener: (context, state) {
         if (state is EmptyRole) {
           showDialog(
@@ -113,11 +120,14 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   String? _module;
   final logger = Logger();
 
+  Widget? _activePage;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('I Voucher'),
+        actions: getActions(_module),
       ),
       drawer: Drawer(
         child: DrawerListView(widget.roles, widget.groups, (value) async {
@@ -139,11 +149,43 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     //todo
     switch (module) {
       case 'user':
-        return const UserPage();
+        _activePage = const UserPage();
+        break;
       case 'sale':
-        return const SalesPage();
+        _activePage = const SalesPage();
+        break;
       default:
-        return const Placeholder();
+        _activePage = Center(child: Image.asset('assets/construction.png'),);
+    }
+    return _activePage;
+  }
+
+  List<Widget> getActions(String? module) {
+    //todo
+    switch (module) {
+      case 'sale':
+        return [
+          PopupMenuButton<int>(
+            onSelected: (value){
+              context.read<HomeBloc>().add(AppbarAction(value));
+            },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Icon(Icons.sort),
+              ),
+              itemBuilder: (context) => [
+                    const PopupMenuItem<int>(
+                      value: actionSortByName,
+                      child: Text('Sort By Name'),
+                    ),
+                    const PopupMenuItem<int>(
+                      value: actionSortByDays,
+                      child: Text('Sort By Days'),
+                    ),
+                  ])
+        ];
+      default:
+        return [];
     }
   }
 }

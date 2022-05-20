@@ -80,7 +80,8 @@ class _LoginView extends StatelessWidget {
               FormBuilderTextField(
                 name: "email",
                 // initialValue: kDebugMode ? "sandysultan@gmail.com" : "",
-                initialValue: kDebugMode ? "emilda.rika@gmail.com" : "",
+                // initialValue: kDebugMode ? "emilda.rika@gmail.com" : "",
+                initialValue: kDebugMode ? "dianrosadi2020@gmail.com" : "",
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   label: Text("Email"),

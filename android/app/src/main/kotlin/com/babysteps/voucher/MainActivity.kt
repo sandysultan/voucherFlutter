@@ -1,4 +1,4 @@
-package com.babystep.voucher
+package com.babysteps.voucher
 
 import io.flutter.embedding.android.FlutterActivity
 

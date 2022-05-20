@@ -9,20 +9,41 @@ abstract class SalesEditPowerState extends Equatable {
 class SalesEditPowerInitial extends SalesEditPowerState {
 }
 
-class SalesEditPowerLoading extends SalesEditPowerState {
+class SalesEditGetPowerLoading extends SalesEditPowerState {
 }
 
-class SalesEditPowerSuccess extends SalesEditPowerState {
-  final Sales sales;
-  const SalesEditPowerSuccess(this.sales);
+class SalesEditGetPowerSuccess extends SalesEditPowerState {
+  final Sales? sales;
+  const SalesEditGetPowerSuccess(this.sales);
 
   @override
-  List<Object> get props => [sales];
+  List<Object> get props => sales!=null?[sales!]:[];
 }
 
 class SalesEditPowerError extends SalesEditPowerState {
   final String message;
   const SalesEditPowerError(this.message);
+  @override
+  List<Object> get props => [message];
+}
+
+
+
+class SalesEditUpdatePowerLoading extends SalesEditPowerState {
+}
+
+class SalesEditUpdatePowerSuccess extends SalesEditPowerState {
+  final Kiosk kiosk;
+  const SalesEditUpdatePowerSuccess(this.kiosk);
+
+  @override
+  List<Object> get props => [kiosk];
+}
+
+
+class SalesEditUpdatePowerError extends SalesEditPowerState {
+  final String message;
+  const SalesEditUpdatePowerError(this.message);
   @override
   List<Object> get props => [message];
 }

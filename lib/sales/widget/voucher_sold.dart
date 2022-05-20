@@ -56,7 +56,8 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
   void initState() {
     _vouchers = widget.voucherRecap?.vouchers;
     for (VoucherItem voucher in _vouchers ?? []) {
-      _subTotal += voucher.price * (voucher.stock - voucher.balance);
+      _subTotal +=
+          voucher.price * (voucher.stock - voucher.balance - voucher.damage);
       logger.d('_subTotal ' + _subTotal.toString());
     }
     super.initState();
@@ -72,6 +73,7 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
           child: Text(
             'Voucher',
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12),
           ),
         ),
         Padding(
@@ -79,6 +81,7 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
           child: Text(
             'Price',
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12),
           ),
         ),
         Padding(
@@ -86,6 +89,7 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
           child: Text(
             'Stock',
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12),
           ),
         ),
         Padding(
@@ -93,6 +97,15 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
           child: Text(
             'Balance',
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            'Damage',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12),
           ),
         ),
         Padding(
@@ -100,6 +113,7 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
           child: Text(
             'Restock',
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12),
           ),
         ),
       ]),
@@ -112,8 +126,8 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
                 setState(() {
                   _subTotal = 0;
                   for (VoucherItem voucher in _vouchers ?? []) {
-                    _subTotal +=
-                        voucher.price * (voucher.stock - voucher.balance);
+                    _subTotal += voucher.price *
+                        (voucher.stock - voucher.balance - voucher.damage);
                   }
                   // logger.d('_subTotal ' + _subTotal.toString());
                   widget.onChanged(VoucherRecap(
@@ -158,12 +172,12 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
                             ),
                             const Text(' x '),
                             Text(
-                              formatter.format(e.stock - e.balance),
+                              formatter.format(e.stock - e.balance - e.damage),
                               textAlign: TextAlign.right,
                             ),
                             const Text(' = '),
                             Text(
-                              formatter.format(e.price * (e.stock - e.balance)),
+                              formatter.format(e.price * (e.stock - e.balance - e.damage)),
                               textAlign: TextAlign.right,
                             ),
                           ],
@@ -203,7 +217,13 @@ class _VoucherItemView extends TableRow {
   _VoucherItemView(VoucherItem e, ValueChanged<VoucherItem> onChanged)
       : super(
           children: [
-            SizedBox(height: 30, child: Center(child: Text(e.name))),
+            SizedBox(
+                height: 30,
+                child: Center(
+                    child: Text(
+                  e.name,
+                  style: const TextStyle(fontSize: 12),
+                ))),
             _NumberField(
               e.price,
               readOnly: true,
@@ -223,6 +243,13 @@ class _VoucherItemView extends TableRow {
               e.balance,
               onChanged: (value) {
                 e.balance = value == "" ? 0 : int.parse(value);
+                onChanged(e);
+              },
+            ),
+            _NumberField(
+              e.damage,
+              onChanged: (value) {
+                e.damage = value == "" ? 0 : int.parse(value);
                 onChanged(e);
               },
             ),
@@ -280,6 +307,7 @@ class VoucherItem {
   int price;
   int stock;
   int balance;
+  int damage;
   int restock;
 
   VoucherItem(
@@ -288,5 +316,6 @@ class VoucherItem {
       required this.price,
       required this.stock,
       required this.balance,
+      required this.damage,
       required this.restock});
 }

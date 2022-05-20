@@ -4,7 +4,7 @@ import 'package:repository/src/model/model.dart';
 part 'kiosk.g.dart';
 
 @JsonSerializable()
-class Kiosk{
+class Kiosk {
   final String kioskName;
   final int id;
   final double? latitude;
@@ -18,14 +18,50 @@ class Kiosk{
   final DateTime createdAt;
   final List<Sales>? sales;
 
-  Kiosk({required this.kioskName,required this.id, this.latitude,
-    this.longitude,this.photo,required this.status,
-    this.founder,this.whatsapp,required this.kioskShare,this.sales,required this.powerCost,required this.createdAt,
-
+  Kiosk({
+    required this.kioskName,
+    required this.id,
+    this.latitude,
+    this.longitude,
+    this.photo,
+    required this.status,
+    this.founder,
+    this.whatsapp,
+    required this.kioskShare,
+    this.sales,
+    required this.powerCost,
+    required this.createdAt,
   });
 
-
-  factory Kiosk.fromJson(Map<String, dynamic> json) =>
-      _$KioskFromJson(json);
+  factory Kiosk.fromJson(Map<String, dynamic> json) => _$KioskFromJson(json);
   Map<String, dynamic> toJson() => _$KioskToJson(this);
+
+  Kiosk copy({
+    String? kioskName,
+    int? id,
+    double? latitude,
+    double? longitude,
+    bool? photo,
+    bool? status,
+    String? founder,
+    String? whatsapp,
+    double? kioskShare,
+    int? powerCost,
+    DateTime? createdAt,
+    List<Sales>? sales,
+  }) {
+    return Kiosk(
+      kioskName: kioskName ?? this.kioskName,
+      id: id ?? this.id,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      photo: photo ?? this.photo,
+      status: status ?? this.status,
+      founder: founder ?? this.founder,
+      whatsapp: whatsapp ?? this.whatsapp,
+      kioskShare: kioskShare ?? this.kioskShare,
+      powerCost: powerCost ?? this.powerCost,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

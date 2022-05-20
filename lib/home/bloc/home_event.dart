@@ -8,9 +8,17 @@ abstract class HomeEvent extends Equatable {
 }
 
 class LoadRolesAndGroups extends HomeEvent {
-  final String email;
-  const LoadRolesAndGroups(this.email);
+  final String uid;
+  const LoadRolesAndGroups(this.uid);
 
   @override
-  List<Object?> get props => [email];
+  List<Object?> get props => [uid];
+}
+
+class AppbarAction extends HomeEvent {
+  final int id;
+  const AppbarAction(this.id);
+
+  @override
+  List<Object?> get props => [id];
 }

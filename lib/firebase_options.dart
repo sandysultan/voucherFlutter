@@ -61,6 +61,6 @@ class DefaultFirebaseOptions {
     projectId: 'voucher-3d35e',
     storageBucket: 'voucher-3d35e.appspot.com',
     iosClientId: '94374287489-abdn3h91n6o06c1ikqlpsfm095ob8glg.apps.googleusercontent.com',
-    iosBundleId: 'com.babystep.voucher',
+    iosBundleId: 'com.babysteps.voucher',
   );
 }

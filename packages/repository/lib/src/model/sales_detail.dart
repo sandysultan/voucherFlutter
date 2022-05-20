@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import 'model.dart';
+
 part 'sales_detail.g.dart';
 
 @JsonSerializable()
@@ -9,7 +11,9 @@ class SalesDetail{
   final int price;
   final int stock;
   final int balance;
+  final int damage;
   final int restock;
+  final Voucher? voucher;
 
   SalesDetail({
     this.salesId,
@@ -17,7 +21,9 @@ class SalesDetail{
     required this.price,
     required this.stock,
     required this.balance,
+    required this.damage,
     required this.restock,
+    this.voucher,
   });
 
 

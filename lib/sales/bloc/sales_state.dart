@@ -20,5 +20,16 @@ class SalesLoaded extends SalesState {
   List<Object> get props => [kiosks];
 }
 
+class SalesListLoaded extends SalesState {
+  final List<Sales> sales;
+
+  const SalesListLoaded(this.sales);
+
+  @override
+  List<Object> get props => [sales];
+}
+
 class SalesEmpty extends SalesState {
 }
+
+

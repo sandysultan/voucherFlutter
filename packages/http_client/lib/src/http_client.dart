@@ -4,7 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 class HttpClient{
-  static Dio getClient({String url=kDebugMode?'http://192.168.0.155:5000/api/':'http://192.168.0.155:8080/api/',String? token}){
+  static const String server=
+     kDebugMode?'http://192.168.0.155:5000/api/':'http://192.168.0.155:8080/api/';
+
+  static Dio getClient({String url=server,String? token}){
   // static Dio getClient({String url='http://192.168.0.155:8080/api/',String? token}){
 
     Dio dio=Dio(BaseOptions(

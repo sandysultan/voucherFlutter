@@ -19,10 +19,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     repository = UserRepository(HttpClient.getClient(token: token));
 
     on<LoadRolesAndGroups>(_loadRolesAndGroups);
+    on<AppbarAction>((event,emit)=>emit(AppBarClicked(event.id)));
   }
 
   Future<void> _loadRolesAndGroups(LoadRolesAndGroups event, Emitter<HomeState> emit) async {
-    await repository.rolesAndGroups(event.email).then((value) {
+    await repository.rolesAndGroups(event.uid).then((value) {
       if(value?.status==1){
         if(value?.roles.isEmpty==true) {
           emit(EmptyRole());
