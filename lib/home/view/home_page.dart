@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:repository/repository.dart';
 import 'package:voucher/login/login.dart';
 import 'package:voucher/sales/sales.dart';
+import 'package:voucher/transfer/transfer.dart';
 import 'package:voucher/user/view/user_page.dart';
 
 import '../home.dart';
@@ -122,11 +124,12 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
   Widget? _activePage;
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('I Voucher'),
+        title: Text(getTitle(_module)),
         actions: getActions(_module),
       ),
       drawer: Drawer(
@@ -154,6 +157,9 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       case 'sale':
         _activePage = const SalesPage();
         break;
+      case 'transfer':
+        _activePage = const TransferPage();
+        break;
       default:
         _activePage = Center(child: Image.asset('assets/construction.png'),);
     }
@@ -161,7 +167,6 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   }
 
   List<Widget> getActions(String? module) {
-    //todo
     switch (module) {
       case 'sale':
         return [
@@ -188,6 +193,17 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return [];
     }
   }
+
+  String getTitle(String? module) {
+    switch (module) {
+      case 'sale':
+        return 'Sales';
+      case 'transfer':
+        return 'Transfer';
+
+    }
+    return 'iVoucher';
+  }
 }
 
 class DrawerListView extends StatelessWidget {
@@ -209,9 +225,23 @@ class DrawerListView extends StatelessWidget {
       BuildContext context, List<Role> roles, List<Group> groups) {
     var list = <Widget>[
       DrawerHeader(
-        child: Stack(
+        child: Column(
           children: [
-            Text(FirebaseAuth.instance.currentUser?.email ?? ""),
+            Text(FirebaseAuth.instance.currentUser?.email ?? "",
+              style: const TextStyle(color: Colors.white),),
+            FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState ==
+                      ConnectionState.done) {
+                    return Text(
+                      "Version : " + snapshot.requireData.version,
+                      style: const TextStyle(color: Colors.white),
+                    );
+                  } else {
+                    return Container();
+                  }
+                }),
           ],
         ),
         decoration: const BoxDecoration(color: Colors.blue),
@@ -271,6 +301,14 @@ class DrawerListView extends StatelessWidget {
         title: const Text('Sales'),
         onTap: () async {
           onModuleChanged('sale');
+        },
+      ));
+    }
+    if (modules.contains('transfer')) {
+      list.add(ListTile(
+        title: const Text('Transfer'),
+        onTap: () async {
+          onModuleChanged('transfer');
         },
       ));
     }

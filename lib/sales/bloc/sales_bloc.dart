@@ -29,12 +29,12 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
       emit(SalesEmpty());
     }else {
       salesRepository = SalesRepository(HttpClient.getClient(token: token));
-      await salesRepository.getSales(event.groupName,event.status,).then((value) {
+      await salesRepository.getSales(groupName:event.groupName,status:event.status,groupByKiosk: true).then((value) {
         if (value?.status == 1) {
-          if (value?.kiosks.isEmpty == true) {
+          if (value?.kiosks?.isEmpty == true) {
             emit(SalesEmpty());
           } else {
-            emit(SalesLoaded(value!.kiosks));
+            emit(SalesLoaded(value!.kiosks!));
           }
         } else {
           emit(SalesEmpty());

@@ -6,6 +6,7 @@ export 'kiosk_update_response.dart';
 export 'sales.dart';
 export 'group.dart';
 export 'user.dart';
+export 'transfer.dart';
 export 'voucher.dart';
 export 'sales_response.dart';
 export 'add_sales_response.dart';

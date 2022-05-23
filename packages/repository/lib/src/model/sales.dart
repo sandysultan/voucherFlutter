@@ -19,6 +19,7 @@ class Sales {
   final bool? receipt;
   final bool fundTransferred;
   final User? user;
+  final Kiosk? kiosk;
 
   @JsonKey(name:'sales_details')
   final List<SalesDetail>? salesDetails;
@@ -38,6 +39,7 @@ class Sales {
     required this.fundTransferred,
     this.salesDetails,
     this.user,
+    this.kiosk,
   });
 
   Sales copy({

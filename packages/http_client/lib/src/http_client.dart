@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 
 class HttpClient{
   static const String server=
-     kDebugMode?'http://192.168.0.155:5000/api/':'http://192.168.0.155:8080/api/';
+     kDebugMode?'http://192.168.0.155:5000/api/':'https://ivoucher.my.id/api/';
 
   static Dio getClient({String url=server,String? token}){
   // static Dio getClient({String url='http://192.168.0.155:8080/api/',String? token}){

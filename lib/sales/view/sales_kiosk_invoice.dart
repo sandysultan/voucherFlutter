@@ -498,7 +498,7 @@ class SalesKioskView extends StatelessWidget {
                       EasyLoading.showError(state.message);
                     } else if (state is UpdateWhatsappSuccess) {
                       EasyLoading.showSuccess('Whatsapp number saved');
-                      sendWhatsapp(
+                      sendWhatsapp(context,
                           state.kiosk.whatsapp!,
                           dateFormat.format(sales.date ?? DateTime.now()) +
                               " Rp. " +
@@ -534,7 +534,7 @@ class SalesKioskView extends StatelessWidget {
                                       ],
                                     ));
                             if (result == 1) {
-                              sendWhatsapp(
+                              sendWhatsapp(context,
                                   kiosk.whatsapp!,
                                   dateFormat.format(
                                           sales.date ?? DateTime.now()) +
@@ -571,8 +571,32 @@ class SalesKioskView extends StatelessWidget {
     Share.shareFiles([imgFile.path], text: 'Invoice');
   }
 
-  void sendWhatsapp(String number, String message) {
-    launchUrl(Uri.parse("https://wa.me/$number?text=$message"));
+  void sendWhatsapp(BuildContext context, String number, String message) async {
+
+  //   launchUrl(Uri.parse("https://wa.me/$number?text=$message"));
+  // }
+  //
+  // openwhatsapp() async{
+  //   var whatsapp ="+919144040888";
+    var whatsappURlAndroid = Uri.parse("whatsapp://send?phone="+number+"&text=$message");
+    var whatappURLIos = Uri.parse("https://wa.me/$number?text=$message");
+    if(Platform.isIOS){
+      // for iOS phone only
+      if( await canLaunchUrl(whatappURLIos)){
+        await launchUrl(whatappURLIos);
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("whatsapp not installed")));
+      }
+    }else{
+      // android , web
+      if( await canLaunchUrl(whatsappURlAndroid)){
+        await launchUrl(whatsappURlAndroid);
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("whatsapp not installed")));
+      }
+    }
   }
 
   void changeNumber({required BuildContext context, String? whatsapp}) async {

@@ -38,8 +38,8 @@ class _SalesPageState extends State<SalesPage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        (_groups?.length ?? 0) > 1
-            ? Padding(
+        if((_groups?.length ?? 0) > 1) ...[
+             Padding(
               padding: const EdgeInsets.only(left: 16,right: 16,bottom: 16),
               child: FormBuilderDropdown<String>(name:'group',
                 decoration: const InputDecoration(label: Text('Group')),
@@ -54,11 +54,10 @@ class _SalesPageState extends State<SalesPage> {
                       _groupName = value;
                     });
                   }),
-            )
-            : Container(),
-        _groupName == null
-            ? Container()
-            : Expanded(
+            )]
+            ,
+        if(_groupName != null) ...[
+            Expanded(
                 child: FutureBuilder<String>(
                     future: FirebaseAuth.instance.currentUser?.getIdToken(),
                     builder: (context, snapshot) {
@@ -66,7 +65,7 @@ class _SalesPageState extends State<SalesPage> {
                         return BlocProvider(
                           create: (context) => SalesBloc(snapshot.data!)
                             ..add(SalesRefresh(_groupName!,_allStatus?null:1)),
-                          child: SalesView(groupName: _groupName!,allStatus: _allStatus,),
+                          child: _SalesView(groupName: _groupName!,allStatus: _allStatus,),
                         );
                       } else {
                         return const Center(
@@ -74,14 +73,14 @@ class _SalesPageState extends State<SalesPage> {
                         );
                       }
                     }),
-              ),
+              )],
       ],
     );
   }
 }
 
-class SalesView extends StatelessWidget {
-  const SalesView({Key? key, required this.groupName, required this.allStatus}) : super(key: key);
+class _SalesView extends StatelessWidget {
+  const _SalesView({Key? key, required this.groupName, required this.allStatus}) : super(key: key);
   final String groupName;
   final bool allStatus;
   @override

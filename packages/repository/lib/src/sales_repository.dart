@@ -10,7 +10,11 @@ abstract class SalesRepository{
   factory SalesRepository(Dio dio,{String baseUrl}) = _SalesRepository;
 
   @GET('/sales')
-  Future<SalesResponse?> getSales(@Query('groupName') String groupName,@Query('status') int? status);
+  Future<SalesResponse?> getSales(
+      {@Query('groupName') required String groupName,
+      @Query('status') int? status,
+      @Query('groupByKiosk') bool? groupByKiosk,
+      @Query('fundTransferred') bool? fundTransferred});
 
   @POST('/sales')
   Future<AddSalesResponse?> addSales(@Body() Sales body,);

@@ -153,7 +153,8 @@ class _SalesViewState extends State<_SalesView> {
                           _kioskProfit =
                               (_subtotal * widget.item.kioskShare).floor();
                           _total = getTotal();
-                          _cashController.text = _total.toString();
+                          _cashController.text =
+                              ((_total/1000).floor()*1000).toString();
                         });
                       },
                       validator: (VoucherRecap? value) {
@@ -213,7 +214,8 @@ class _SalesViewState extends State<_SalesView> {
                       _kioskProfit =
                           (_subtotal * widget.item.kioskShare).floor();
                       _total = getTotal();
-                      _cashController.text = _total.toString();
+                      _cashController.text =
+                          ((_total/1000).floor()*1000).toString();
                       logger.d('listener finish');
                     });
                   }
@@ -283,7 +285,8 @@ class _SalesViewState extends State<_SalesView> {
                             setState(() {
                               _debt = int.parse(lastDebt);
                               _total = getTotal();
-                              _cashController.text = _total.toString();
+                              _cashController.text =
+                                  ((_total/1000).floor()*1000).toString();
                             });
                           }
                         },
@@ -355,7 +358,7 @@ class _SalesViewState extends State<_SalesView> {
                                             _power = value ?? false;
                                             _total = getTotal();
                                             _cashController.text =
-                                                _total.toString();
+                                                ((_total/1000).floor()*1000).toString();
                                           });
                                         },
                                   value: _power,
@@ -501,10 +504,6 @@ class _SalesViewState extends State<_SalesView> {
                     if (value != null && value.isNotEmpty) {
                       if (int.parse(value) < 0) {
                         return 'Cash not allowed minus';
-                      } else {
-                        if (int.parse(value) > _total) {
-                          return 'Cash is more than total, please check';
-                        }
                       }
                     }
                     return null;
@@ -663,7 +662,7 @@ class _SalesViewState extends State<_SalesView> {
                               }
                             }
                           },
-                          child: const Text('Save')));
+                          child: const Text('Continue')));
                 },
               ),
               const SizedBox(
