@@ -1,6 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -12,8 +17,8 @@ import 'package:voucher/user/view/user_page.dart';
 
 import '../home.dart';
 
-const int actionSortByName=0;
-const int actionSortByDays=1;
+const int actionSortByName = 0;
+const int actionSortByDays = 1;
 
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
@@ -54,7 +59,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
-    logger.d('uid: '+ FirebaseAuth.instance.currentUser!.uid);
+    logger.d('uid: ${FirebaseAuth.instance.currentUser!.uid}');
     context
         .read<HomeBloc>()
         .add(LoadRolesAndGroups(FirebaseAuth.instance.currentUser!.uid));
@@ -64,7 +69,8 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<HomeBloc, HomeState>(
-      buildWhen: (previous,current)=>current is RoleLoaded || current is EmptyRole,
+      buildWhen: (previous, current) =>
+          current is RoleLoaded || current is EmptyRole,
       listener: (context, state) {
         if (state is EmptyRole) {
           showDialog(
@@ -95,11 +101,12 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> logout(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pushAndRemoveUntil<void>(
-      LoginPage.route(),
-      (route) => false,
-    );
+    FirebaseAuth.instance
+        .signOut()
+        .then((value) => Navigator.of(context).pushAndRemoveUntil<void>(
+              LoginPage.route(),
+              (route) => false,
+            ));
   }
 }
 
@@ -124,7 +131,6 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
   Widget? _activePage;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,9 +139,13 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         actions: getActions(_module),
       ),
       drawer: Drawer(
-        child: DrawerListView(widget.roles, widget.groups, (value) async {
+        child: DrawerListView(widget.roles, widget.groups, (value) {
           if (value == 'logout') {
-            await widget.onLogout(context);
+            widget.onLogout(context);
+          }
+          if (value == 'password') {
+            Navigator.pop(context);
+            changePassword();
           } else {
             setState(() {
               _module = value;
@@ -149,7 +159,6 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   }
 
   getChild(String? module) {
-    //todo
     switch (module) {
       case 'user':
         _activePage = const UserPage();
@@ -161,7 +170,9 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         _activePage = const TransferPage();
         break;
       default:
-        _activePage = Center(child: Image.asset('assets/construction.png'),);
+        _activePage = Center(
+          child: Image.asset('assets/construction.png'),
+        );
     }
     return _activePage;
   }
@@ -171,9 +182,9 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       case 'sale':
         return [
           PopupMenuButton<int>(
-            onSelected: (value){
-              context.read<HomeBloc>().add(AppbarAction(value));
-            },
+              onSelected: (value) {
+                context.read<HomeBloc>().add(AppbarAction(value));
+              },
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Icon(Icons.sort),
@@ -200,9 +211,120 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return 'Sales';
       case 'transfer':
         return 'Transfer';
-
     }
     return 'iVoucher';
+  }
+
+  void changePassword() async {
+    var formKey = GlobalKey<FormBuilderState>();
+    // var newPasswordController=TextEditingController();
+    String? newPassword;
+    var values = await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: const Text('Change Password'),
+              content: FormBuilder(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FormBuilderTextField(
+                      name: "email",
+                      // initialValue: kDebugMode ? "sandysultan@gmail.com" : "",
+                      initialValue: kDebugMode ? "emilda.rika@gmail.com" : "",
+                      // initialValue:
+                      //     kDebugMode ? "dianrosadi2020@gmail.com" : "",
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        label: Text("Email"),
+                      ),
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.email(),
+                        FormBuilderValidators.required()
+                      ]),
+                    ),
+                    FormBuilderTextField(
+                      name: "password",
+                      // initialValue: kDebugMode ? "sr@1nkD4Yiv" : "",
+                      initialValue: kDebugMode ? "iVoucher2022" : "",
+                      decoration:
+                          const InputDecoration(label: Text("Password")),
+                      obscureText: true,
+                      validator: FormBuilderValidators.required(),
+                    ),
+                    FormBuilderTextField(
+                      name: "newPassword",
+                      // initialValue: kDebugMode ? "sr@1nkD4Yiv" : "",
+                      initialValue: kDebugMode ? "iVoucher2022" : "",
+                      // controller: newPasswordController,
+                      onChanged: (value){
+                        newPassword=value;
+                      },
+                      decoration:
+                          const InputDecoration(label: Text("New Password")),
+                      obscureText: true,
+                      validator: FormBuilderValidators.required(),
+                    ),
+                    FormBuilderTextField(
+                      name: "confirmNewPassword",
+                      // initialValue: kDebugMode ? "sr@1nkD4Yiv" : "",
+                      initialValue: kDebugMode ? "iVoucher2022" : "",
+                      decoration:
+                          const InputDecoration(label: Text("Confirm New Password")),
+                      obscureText: true,
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.required(),
+                        (value){
+                          if(value!=newPassword) {
+                            return 'Password not match';
+                          }
+                        }
+                      ]),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      if(formKey.currentState?.saveAndValidate()==true){
+                        Navigator.of(context).pop(formKey.currentState?.value);
+                      }
+                    },
+                    child: const Text('Submit')),
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancel'))
+              ],
+            ));
+    if(values!=null){
+
+      firebase.User? user = FirebaseAuth.instance.currentUser;
+
+      try {
+        EasyLoading.show(status: 'Changing password');
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: values['email'],
+          password: values['password'],
+        );
+
+        user?.updatePassword(values['newPassword']).then((_){
+          EasyLoading.showSuccess("Password changed");
+          widget.onLogout(context);
+        }).catchError((error){
+          EasyLoading.showError("Password can't be changed. $error");
+          //This might happen, when the wrong password is in, the user isn't found, or if the user hasn't logged in recently.
+        });
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          EasyLoading.showError('No user found for that email.');
+        } else if (e.code == 'wrong-password') {
+          EasyLoading.showError('Wrong password provided for that user.');
+        }
+      }
+    }
   }
 }
 
@@ -225,17 +347,19 @@ class DrawerListView extends StatelessWidget {
       BuildContext context, List<Role> roles, List<Group> groups) {
     var list = <Widget>[
       DrawerHeader(
+        decoration: const BoxDecoration(color: Colors.blue),
         child: Column(
           children: [
-            Text(FirebaseAuth.instance.currentUser?.email ?? "",
-              style: const TextStyle(color: Colors.white),),
+            Text(
+              FirebaseAuth.instance.currentUser?.email ?? "",
+              style: const TextStyle(color: Colors.white),
+            ),
             FutureBuilder<PackageInfo>(
                 future: PackageInfo.fromPlatform(),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState ==
-                      ConnectionState.done) {
+                  if (snapshot.connectionState == ConnectionState.done) {
                     return Text(
-                      "Version : " + snapshot.requireData.version,
+                      "Version : ${snapshot.requireData.version}",
                       style: const TextStyle(color: Colors.white),
                     );
                   } else {
@@ -244,7 +368,6 @@ class DrawerListView extends StatelessWidget {
                 }),
           ],
         ),
-        decoration: const BoxDecoration(color: Colors.blue),
       )
     ];
     List<String> modules = [];
@@ -314,6 +437,12 @@ class DrawerListView extends StatelessWidget {
     }
     list.addAll([
       const Divider(),
+      ListTile(
+        title: const Text('Change Password'),
+        onTap: () async {
+          onModuleChanged('password');
+        },
+      ),
       ListTile(
         title: const Text('Logout'),
         onTap: () async {

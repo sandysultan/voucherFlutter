@@ -1,12 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:local_repository/local_repository.dart';
-import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voucher/home/home.dart';
 import 'package:voucher/login/login.dart';
@@ -23,7 +20,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var _formKey = GlobalKey<FormBuilderState>();
+    var formKey = GlobalKey<FormBuilderState>();
 
 
     return Scaffold(
@@ -35,7 +32,7 @@ class LoginPage extends StatelessWidget {
                   colors: [Colors.deepPurple, Colors.purple],
                 )),
           ),
-          _LoginView(formKey: _formKey),
+          _LoginView(formKey: formKey),
 
         ],
       ),
@@ -70,7 +67,7 @@ class _LoginView extends StatelessWidget {
                     if (snapshot.connectionState ==
                         ConnectionState.done) {
                       return Text(
-                        "Version : " + snapshot.requireData.version,
+                        "Version : ${snapshot.requireData.version}",
                         style: const TextStyle(color: Colors.white),
                       );
                     } else {
@@ -79,9 +76,10 @@ class _LoginView extends StatelessWidget {
                   }),
               FormBuilderTextField(
                 name: "email",
+                keyboardType: TextInputType.emailAddress,
                 // initialValue: kDebugMode ? "sandysultan@gmail.com" : "",
-                // initialValue: kDebugMode ? "emilda.rika@gmail.com" : "",
-                initialValue: kDebugMode ? "dianrosadi2020@gmail.com" : "",
+                initialValue: kDebugMode ? "emilda.rika@gmail.com" : "",
+                // initialValue: kDebugMode ? "dianrosadi2020@gmail.com" : "",
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   label: Text("Email"),
