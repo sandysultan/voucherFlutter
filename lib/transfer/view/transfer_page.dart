@@ -5,30 +5,69 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
 import 'package:voucher/transfer/transfer.dart';
 
-class TransferPage extends StatefulWidget {
+class TransferPage extends StatelessWidget {
   const TransferPage({Key? key}) : super(key: key);
 
   @override
-  State<TransferPage> createState() => _TransferPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => TransferPageBloc()..add(const GetGroups()),
+      child: const _GetGroupView(),
+    );
+  }
 }
 
-class _TransferPageState extends State<TransferPage> {
-  String? _groupName;
-  final logger = Logger();
-  List<String>? _groups;
+class _GetGroupView extends StatelessWidget {
+  const _GetGroupView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TransferPageBloc, TransferPageState>(
+      buildWhen: (previous, current) =>
+          previous != current &&
+          (current is GetGroupLoading ||
+              current is GetGroupSuccess ||
+              current is GetGroupFailed),
+      builder: (context, state) {
+        Logger().d('_GetGroupViewState rebuild with state $state');
+        if (state is GetGroupLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (state is GetGroupFailed) {
+          return Center(
+            child: Text(state.message),
+          );
+        } else if (state is GetGroupSuccess) {
+          return _TransferView(state.group);
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+}
+
+class _TransferView extends StatefulWidget {
+  final List<String> group;
+
+  const _TransferView(this.group);
+
+  @override
+  State<_TransferView> createState() => _TransferViewState();
+}
+
+class _TransferViewState extends State<_TransferView> {
+  late String _groupName;
 
   @override
   void initState() {
-    _groups = context.read<LocalRepository>().currentUser()?.groups;
-    logger.d(_groups);
-    if ((_groups?.length ?? 0) > 0) {
-      _groupName = _groups![0];
-    }
+    _groupName = widget.group[0];
+    context.read<TransferPageBloc>().add(SalesRefresh(_groupName));
     super.initState();
   }
 
@@ -36,7 +75,7 @@ class _TransferPageState extends State<TransferPage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if ((_groups?.length ?? 0) > 1) ...[
+        if (widget.group.length > 1) ...[
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             child: FormBuilderDropdown<String>(
@@ -44,45 +83,40 @@ class _TransferPageState extends State<TransferPage> {
                 decoration: const InputDecoration(label: Text('Group')),
                 isExpanded: true,
                 initialValue: _groupName,
-                items: _groups!
+                items: widget.group
                     .map((e) =>
                         DropdownMenuItem<String>(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
-                    _groupName = value;
+                    _groupName = value!;
+                    context
+                        .read<TransferPageBloc>()
+                        .add(SalesRefresh(_groupName));
                   });
                 }),
           )
         ],
-        if (_groupName != null) ...[
-          Expanded(
-            child: BlocProvider(
-              key: ObjectKey(_groupName),
-              create: (context) => TransferPageBloc()
-                ..add(SalesRefresh(
-                  _groupName!,
-                )),
-              child: _TransferView(
-                groupName: _groupName!,
-              ),
-            ),
-          )
-        ],
+        Expanded(
+          child: _TransferRefreshableView(
+            groupName: _groupName,
+          ),
+        ),
       ],
     );
   }
 }
 
-class _TransferView extends StatelessWidget {
-  const _TransferView({
+class _TransferRefreshableView extends StatelessWidget {
+  const _TransferRefreshableView({
     Key? key,
     required this.groupName,
   }) : super(key: key);
   final String groupName;
+
   @override
   Widget build(BuildContext context) {
-    // return Text(groupName);
+    Logger().d('_SalesRefreshableView build');
     return RefreshIndicator(
       onRefresh: () {
         final itemsBloc = BlocProvider.of<TransferPageBloc>(context)
@@ -92,10 +126,10 @@ class _TransferView extends StatelessWidget {
       },
       child: BlocBuilder<TransferPageBloc, TransferPageState>(
         buildWhen: (previous, current) =>
-            current is SalesLoaded || current is SalesEmpty,
+            previous != current &&
+            (current is SalesLoaded || current is SalesEmpty),
         builder: (context, state) {
           if (state is SalesLoaded) {
-            // return Text(groupName);
             final items = state.sales;
             // var languageCode2 = Localizations.localeOf(context).;
             // var formatter = DateFormat('dd MMMM yyyy hh:mm:ss',);
@@ -104,10 +138,8 @@ class _TransferView extends StatelessWidget {
               groupName: groupName,
             );
           } else if (state is SalesEmpty) {
-            // return Text(groupName);
             return const Center(child: Text('Data Empty'));
           } else {
-            // return Text(groupName);
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -117,6 +149,7 @@ class _TransferView extends StatelessWidget {
     );
   }
 }
+
 
 class _SalesList extends StatefulWidget {
   const _SalesList({
@@ -162,9 +195,8 @@ class _SalesListState extends State<_SalesList> {
                   ),
                   // backgroundColor: days >= 7 ? Colors.red : Colors.blue,
                 ),
-                title: Text((item.kiosk?.kioskName ?? "") +
-                    ", Rp. " +
-                    _numberFormat.format(item.cash)),
+                title: Text(
+                    "${item.kiosk?.kioskName ?? ""}, Rp. ${_numberFormat.format(item.cash)}"),
                 // subtitle: Text(days > 0
                 //     ? days.toString() + " day(s) from last billing"
                 //     : ""),
@@ -320,30 +352,46 @@ class _SalesListState extends State<_SalesList> {
                                         title: const Text('Camera'),
                                         leading: const Icon(Icons.camera),
                                         onTap: () async {
-                                          final ImagePicker _picker =
+                                          final ImagePicker picker =
                                               ImagePicker();
-                                          final XFile? photo =
-                                              await _picker.pickImage(
-                                                  source: ImageSource.camera);
-                                          if (photo != null) {
-                                            await cropImage(photo);
-                                          }
-                                          Navigator.of(context).pop();
+                                          picker
+                                              .pickImage(
+                                                  source: ImageSource.camera)
+                                              .then((value) {
+                                            if (value != null) {
+                                              cropImage(value).then((value) {
+                                                if (value != null) {
+                                                  saveTransfer(context, value);
+                                                }
+                                                Navigator.of(context).pop();
+                                              });
+                                            } else {
+                                              Navigator.of(context).pop();
+                                            }
+                                          });
                                         },
                                       ),
                                       ListTile(
                                         title: const Text('Gallery'),
                                         leading: const Icon(Icons.image_search),
                                         onTap: () async {
-                                          final ImagePicker _picker =
+                                          final ImagePicker picker =
                                               ImagePicker();
-                                          final XFile? image =
-                                              await _picker.pickImage(
-                                                  source: ImageSource.gallery);
-                                          if (image != null) {
-                                            await cropImage(image);
-                                          }
-                                          Navigator.of(context).pop();
+                                          picker
+                                              .pickImage(
+                                                  source: ImageSource.gallery)
+                                              .then((value) {
+                                            if (value != null) {
+                                              cropImage(value).then((value) {
+                                                if (value != null) {
+                                                  saveTransfer(context, value);
+                                                }
+                                                Navigator.of(context).pop();
+                                              });
+                                            } else {
+                                              Navigator.of(context).pop();
+                                            }
+                                          });
                                         },
                                       ),
                                     ],
@@ -360,7 +408,21 @@ class _SalesListState extends State<_SalesList> {
     );
   }
 
-  Future<void> cropImage(XFile image) async {
+  void saveTransfer(BuildContext context, CroppedFile value) {
+    var total = 0;
+    List<Sales> sales = [];
+    _selected.forEach((key, value) {
+      if (value) {
+        sales.add(key);
+        total += key.cash;
+      }
+    });
+    List<int> salesIds = sales.map((e) => e.id ?? 0).toList();
+    context.read<TransferPageBloc>().add(AddTransfer(
+        Transfer(total: total, salesIds: salesIds), value.path));
+  }
+
+  Future<CroppedFile?> cropImage(XFile image) async {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: image.path,
       aspectRatioPresets: [
@@ -380,18 +442,7 @@ class _SalesListState extends State<_SalesList> {
         ),
       ],
     );
-    if (croppedFile != null) {
-      var total = 0;
-      List<Sales> sales = [];
-      _selected.forEach((key, value) {
-        if (value) {
-          sales.add(key);
-          total += key.cash;
-        }
-      });
-      List<int> salesIds = sales.map((e) => e.id ?? 0).toList();
-      context.read<TransferPageBloc>().add(AddTransfer(
-          Transfer(total: total, salesIds: salesIds), croppedFile.path));
-    }
+    return croppedFile;
+
   }
 }

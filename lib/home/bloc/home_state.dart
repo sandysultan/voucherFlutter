@@ -11,16 +11,23 @@ class HomeInitial extends HomeState {
 }
 
 class RoleLoaded extends HomeState {
-  final List<Role> roles;
-  final List<Group> groups;
+  final List<String> modules;
 
-  const RoleLoaded(this.roles,this.groups);
+
+  const RoleLoaded(this.modules);
 
   @override
-  List<Object> get props => [roles,groups];
+  List<Object> get props => [modules];
 }
 
 class EmptyRole extends HomeState {
+  final String message;
+
+
+  const EmptyRole(this.message);
+
+  @override
+  List<Object> get props => [message];
 
 }
 

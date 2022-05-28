@@ -33,6 +33,21 @@ class LocalRepository{
     user.groups = groups;
   }
 
+  void updateModules(List<String> modules) {
+    final usersBox = Hive.box<LocalUser>(boxName);
+    LocalUser user;
+    if (usersBox.length <= 0) {
+      usersBox.add(LocalUser());
+    }
+    user = usersBox.getAt(0)!;
+    user.modules = modules;
+  }
+
+  void clear() {
+    final usersBox = Hive.box<LocalUser>(boxName);
+    usersBox.clear();
+  }
+
 
 
 }

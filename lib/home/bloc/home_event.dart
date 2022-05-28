@@ -7,9 +7,9 @@ abstract class HomeEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadRolesAndGroups extends HomeEvent {
+class LoadModules extends HomeEvent {
   final String uid;
-  const LoadRolesAndGroups(this.uid);
+  const LoadModules(this.uid);
 
   @override
   List<Object?> get props => [uid];

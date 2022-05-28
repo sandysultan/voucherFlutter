@@ -53,3 +53,26 @@ class AddTransferSuccess extends TransferPageState {
   List<Object> get props => [transfer];
 
 }
+
+class GetGroupLoading extends TransferPageState {
+}
+
+class GetGroupSuccess extends TransferPageState {
+  final List<String> group;
+
+  const GetGroupSuccess(this.group);
+
+  @override
+  List<Object> get props => [group];
+}
+
+class GetGroupFailed extends TransferPageState {
+  final String message;
+
+  const GetGroupFailed(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+

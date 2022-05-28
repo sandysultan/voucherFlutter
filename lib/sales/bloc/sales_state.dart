@@ -32,4 +32,25 @@ class SalesListLoaded extends SalesState {
 class SalesEmpty extends SalesState {
 }
 
+class GetGroupLoading extends SalesState {
+}
+
+class GetGroupSuccess extends SalesState {
+  final List<String> group;
+
+  const GetGroupSuccess(this.group);
+
+  @override
+  List<Object> get props => [group];
+}
+
+class GetGroupFailed extends SalesState {
+  final String message;
+
+  const GetGroupFailed(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
 

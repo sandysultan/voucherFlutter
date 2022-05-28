@@ -2,6 +2,9 @@ part of 'sales_bloc.dart';
 
 abstract class SalesEvent extends Equatable {
   const SalesEvent();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class SalesRefresh extends SalesEvent{
@@ -25,5 +28,12 @@ class SalesListRefresh extends SalesEvent{
 
   @override
   List<Object?> get props => [kioskId,year,month];
+
+}
+
+
+class GetGroups extends SalesEvent{
+
+  const GetGroups();
 
 }

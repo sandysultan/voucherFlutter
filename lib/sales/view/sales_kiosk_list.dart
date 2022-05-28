@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -26,6 +25,7 @@ class SalesKioskList extends StatefulWidget {
 
 class _SalesKioskListState extends State<SalesKioskList> {
   late DateTime _dateTime;
+  late DateTime _lastDateTime;
   final DateFormat _monthFormatter = DateFormat('MMMM yyyy');
   final DateFormat _yearFormatter = DateFormat('yyyy');
 
@@ -34,6 +34,7 @@ class _SalesKioskListState extends State<SalesKioskList> {
   @override
   void initState() {
     _dateTime = DateTime.now();
+    _lastDateTime = DateTime.now();
     super.initState();
   }
 
@@ -46,6 +47,12 @@ class _SalesKioskListState extends State<SalesKioskList> {
           PopupMenuButton<bool>(
             onSelected: (value) {
               setState(() {
+                if(value){
+                  _lastDateTime=DateTime(_dateTime.year,_dateTime.month,_dateTime.day);
+                  _dateTime=DateTime(_dateTime.year , 1, 1);
+                }else{
+                  _dateTime=DateTime(_lastDateTime.year,_lastDateTime.month,_lastDateTime.day);
+                }
                 _isYear = value;
               });
             },
@@ -108,28 +115,17 @@ class _SalesKioskListState extends State<SalesKioskList> {
                 icon: const Icon(Icons.chevron_right)),
           ]),
           Expanded(
-              child: FutureBuilder<String>(
-                  future: FirebaseAuth.instance.currentUser?.getIdToken(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return BlocProvider(
-                        create: (context) {
-                          var token = snapshot.data;
-                          Logger().d('token '+ token.toString());
-                          return SalesBloc(token!)..add(SalesListRefresh(kioskId: widget.item.id, year: _dateTime.year,month: _isYear?null:_dateTime.month));
-                        },
-                        child: _ListSales(
-                          kiosk: widget.item,
-                            month: _dateTime.month,
-                            year: _dateTime.year,
-                            isYear: _isYear,),
-                      );
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  }))
+              child: BlocProvider(
+                key: ObjectKey(_dateTime),
+                create: (context) {
+                  return SalesBloc()..add(SalesListRefresh(kioskId: widget.item.id, year: _dateTime.year,month: _isYear?null:_dateTime.month));
+                },
+                child: _ListSales(
+                  kiosk: widget.item,
+                  month: _dateTime.month,
+                  year: _dateTime.year,
+                  isYear: _isYear,),
+              ))
         ],
       ),
     );

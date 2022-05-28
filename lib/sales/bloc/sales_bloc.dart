@@ -12,14 +12,12 @@ part 'sales_event.dart';
 part 'sales_state.dart';
 
 class SalesBloc extends Bloc<SalesEvent, SalesState> {
-  late SalesRepository salesRepository;
-  late KioskRepository kioskRepository;
+
   final logger = Logger();
-  SalesBloc(String token) : super(SalesInitial()) {
-    salesRepository = SalesRepository(HttpClient.getClient(token: token));
-    kioskRepository = KioskRepository(HttpClient.getClient(token: token));
+  SalesBloc() : super(SalesInitial()) {
     on<SalesRefresh>(_salesRefresh);
     on<SalesListRefresh>(_salesListRefresh);
+    on<GetGroups>(_getGroups);
   }
 
 
@@ -28,7 +26,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     if(token==null){
       emit(SalesEmpty());
     }else {
-      salesRepository = SalesRepository(HttpClient.getClient(token: token));
+      SalesRepository salesRepository = SalesRepository(HttpClient.getClient(token: token));
       await salesRepository.getSales(groupName:event.groupName,status:event.status,groupByKiosk: true).then((value) {
         if (value?.status == 1) {
           if (value?.kiosks?.isEmpty == true) {
@@ -49,18 +47,52 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
 
 
   Future<void> _salesListRefresh(SalesListRefresh event, Emitter<SalesState> emit) async {
-    await kioskRepository.getSales(event.kioskId,event.year,event.month).then((value) {
-      if(value?.status==1){
-        emit(SalesListLoaded(value!.sales??[]));
-      }else{
-        emit(SalesEmpty());
-      }
-    }).catchError((error,stack){
-      logger.e(error);
-      FirebaseCrashlytics.instance.recordError(error, stack);
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if(token==null){
       emit(SalesEmpty());
-    });
+    }else {
+      KioskRepository kioskRepository = KioskRepository(HttpClient.getClient(token: token));
+      await kioskRepository.getSales(event.kioskId, event.year, event.month)
+          .then((value) {
+        if (value?.status == 1) {
+          emit(SalesListLoaded(value!.sales ?? []));
+        } else {
+          emit(SalesEmpty());
+        }
+      }).catchError((error, stack) {
+        logger.e(error);
+        FirebaseCrashlytics.instance.recordError(error, stack);
+        emit(SalesEmpty());
+      });
+    }
+  }
 
+
+  Future<void> _getGroups(GetGroups event, Emitter<SalesState> emit) async {
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if(token==null){
+      emit(const GetGroupFailed('Authentication Failed'));
+    }else {
+      UserRepository userRepository = UserRepository(HttpClient.getClient(token: token));
+      await userRepository.getGroup('sale')
+          .then((value) {
+        if (value?.status == 1) {
+          Logger().d(value!.groups);
+          emit(GetGroupSuccess(value.groups));
+        } else {
+          emit(GetGroupFailed(value?.message??"Server error"));
+        }
+      }).catchError((error, stack) {
+        logger.e(error);
+        FirebaseCrashlytics.instance.recordError(error, stack);
+
+        if(error is DioError){
+          emit(GetGroupFailed(HttpClient.getDioErrorMessage(error)));
+        }else {
+          emit(GetGroupFailed(error.toString()));
+        }
+      });
+    }
   }
 
 

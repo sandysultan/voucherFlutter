@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
@@ -30,7 +30,12 @@ class SalesKioskInvoiceBloc extends Bloc<SalesKioskInvoiceEvent, SalesKioskInvoi
     }).catchError((error, stack){
       logger.e(error);
       FirebaseCrashlytics.instance.recordError(error, stack);
-      emit(UpdateWhatsappError(error.toString()));
+
+      if(error is DioError){
+        emit(UpdateWhatsappError(HttpClient.getDioErrorMessage(error)));
+      }else {
+        emit(UpdateWhatsappError(error.toString()));
+      }
     });
 
   }

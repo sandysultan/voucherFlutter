@@ -1,8 +1,7 @@
 import 'dart:io';
-
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
@@ -10,19 +9,15 @@ import 'package:repository/repository.dart';
 part 'sales_edit_save_state.dart';
 
 class SalesEditSaveCubit extends Cubit<SalesEditSaveState> {
-  late SalesRepository repository;
+
   final logger = Logger();
-  SalesEditSaveCubit(String token) : super(SalesEditSaveInitial()){
-    logger.d('token:' + token);
-    repository = SalesRepository(HttpClient.getClient(token: token));
-  }
+  SalesEditSaveCubit() : super(SalesEditSaveInitial());
 
   Future<void> save(String token, Sales body,File? receipt) async {
     var logger = Logger();
     emit(SalesEditSaveLoading());
     try{
-      // logger.d(body.toJson());
-      repository = SalesRepository(HttpClient.getClient(token: token));
+      SalesRepository repository = SalesRepository(HttpClient.getClient(token: token));
       var salesResponse = await repository.addSales(body);
 
       if(salesResponse!=null){
@@ -44,10 +39,14 @@ class SalesEditSaveCubit extends Cubit<SalesEditSaveState> {
         emit(const SalesEditError('Network error'));
       }
 
-    } on Exception catch (e,stack) {
-      logger.e(e);
-      FirebaseCrashlytics.instance.recordError(e, stack);
-      emit(SalesEditError(e.toString()));
+    } on Exception catch (error,stack) {
+      logger.e(error);
+      FirebaseCrashlytics.instance.recordError(error, stack);
+      if(error is DioError){
+        emit(SalesEditError(HttpClient.getDioErrorMessage(error)));
+      }else {
+        emit(SalesEditError(error.toString()));
+      }
     }
   }
 }

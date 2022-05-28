@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
 
 part 'login_state.dart';
@@ -24,10 +25,15 @@ class LoginCubit extends Cubit<LoginState> {
       }else{
         emit(const LoginFailed('Login Failed'));
       }
-    } on Exception catch (e,stack) {
-      logger.e(e);
-      FirebaseCrashlytics.instance.recordError(e, stack);
-      emit(LoginFailed(e.toString()));
+    } on Exception catch (error,stack) {
+      logger.e(error);
+      FirebaseCrashlytics.instance.recordError(error, stack);
+
+      if(error is DioError){
+        emit(LoginFailed(HttpClient.getDioErrorMessage(error)));
+      }else {
+        emit(LoginFailed(error.toString()));
+      }
     }
   }
   //

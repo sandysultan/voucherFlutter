@@ -9,7 +9,6 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:repository/repository.dart';
 import 'package:voucher/login/login.dart';
 import 'package:voucher/sales/sales.dart';
 import 'package:voucher/transfer/transfer.dart';
@@ -31,20 +30,9 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: FirebaseAuth.instance.currentUser?.getIdToken(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return BlocProvider(
-            create: (context) => HomeBloc(snapshot.data!),
-            child: const HomeView(),
-          );
-        } else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      },
+    return BlocProvider(
+      create: (context) => HomeBloc(),
+      child: const HomeView(),
     );
   }
 }
@@ -62,7 +50,7 @@ class _HomeViewState extends State<HomeView> {
     logger.d('uid: ${FirebaseAuth.instance.currentUser!.uid}');
     context
         .read<HomeBloc>()
-        .add(LoadRolesAndGroups(FirebaseAuth.instance.currentUser!.uid));
+        .add(LoadModules(FirebaseAuth.instance.currentUser!.uid));
     super.initState();
   }
 
@@ -76,8 +64,7 @@ class _HomeViewState extends State<HomeView> {
           showDialog(
               context: context,
               builder: (_) => AlertDialog(
-                    content: const Text(
-                        'You don' 't have any role, please contact admin'),
+                    content: Text(state.message),
                     actions: [
                       TextButton(
                           onPressed: () async {
@@ -90,7 +77,8 @@ class _HomeViewState extends State<HomeView> {
       },
       builder: (context, state) {
         if (state is RoleLoaded) {
-          return HomeScaffold(state.roles, state.groups, logout);
+          context.read<LocalRepository>().updateModules(state.modules);
+          return HomeScaffold(logout);
         } else {
           return const Center(
             child: CircularProgressIndicator(),
@@ -101,24 +89,23 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> logout(BuildContext context) async {
-    FirebaseAuth.instance
-        .signOut()
-        .then((value) => Navigator.of(context).pushAndRemoveUntil<void>(
-              LoginPage.route(),
-              (route) => false,
-            ));
+    FirebaseAuth.instance.signOut().then((value) {
+      context.read<LocalRepository>().clear();
+      Navigator.of(context).pushAndRemoveUntil<void>(
+        LoginPage.route(),
+        (route) => false,
+      );
+    });
   }
 }
 
 class HomeScaffold extends StatefulWidget {
   const HomeScaffold(
-    this.roles,
-    this.groups,
+    // this.modules,
     this.onLogout, {
     Key? key,
   }) : super(key: key);
-  final List<Role> roles;
-  final List<Group> groups;
+  // final List<String> modules;
   final Function(BuildContext context) onLogout;
 
   @override
@@ -139,7 +126,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         actions: getActions(_module),
       ),
       drawer: Drawer(
-        child: DrawerListView(widget.roles, widget.groups, (value) {
+        child: DrawerListView((value) {
           if (value == 'logout') {
             widget.onLogout(context);
           }
@@ -257,8 +244,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
                       // initialValue: kDebugMode ? "sr@1nkD4Yiv" : "",
                       initialValue: kDebugMode ? "iVoucher2022" : "",
                       // controller: newPasswordController,
-                      onChanged: (value){
-                        newPassword=value;
+                      onChanged: (value) {
+                        newPassword = value;
                       },
                       decoration:
                           const InputDecoration(label: Text("New Password")),
@@ -269,13 +256,13 @@ class _HomeScaffoldState extends State<HomeScaffold> {
                       name: "confirmNewPassword",
                       // initialValue: kDebugMode ? "sr@1nkD4Yiv" : "",
                       initialValue: kDebugMode ? "iVoucher2022" : "",
-                      decoration:
-                          const InputDecoration(label: Text("Confirm New Password")),
+                      decoration: const InputDecoration(
+                          label: Text("Confirm New Password")),
                       obscureText: true,
                       validator: FormBuilderValidators.compose([
                         FormBuilderValidators.required(),
-                        (value){
-                          if(value!=newPassword) {
+                        (value) {
+                          if (value != newPassword) {
                             return 'Password not match';
                           }
                         }
@@ -287,7 +274,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
               actions: [
                 TextButton(
                     onPressed: () {
-                      if(formKey.currentState?.saveAndValidate()==true){
+                      if (formKey.currentState?.saveAndValidate() == true) {
                         Navigator.of(context).pop(formKey.currentState?.value);
                       }
                     },
@@ -299,21 +286,21 @@ class _HomeScaffoldState extends State<HomeScaffold> {
                     child: const Text('Cancel'))
               ],
             ));
-    if(values!=null){
-
+    if (values != null) {
       firebase.User? user = FirebaseAuth.instance.currentUser;
 
       try {
         EasyLoading.show(status: 'Changing password');
-        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: values['email'],
           password: values['password'],
         );
 
-        user?.updatePassword(values['newPassword']).then((_){
+        user?.updatePassword(values['newPassword']).then((_) {
           EasyLoading.showSuccess("Password changed");
           widget.onLogout(context);
-        }).catchError((error){
+        }).catchError((error) {
           EasyLoading.showError("Password can't be changed. $error");
           //This might happen, when the wrong password is in, the user isn't found, or if the user hasn't logged in recently.
         });
@@ -329,22 +316,18 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 }
 
 class DrawerListView extends StatelessWidget {
-  const DrawerListView(this.roles, this.groups, this.onModuleChanged,
-      {Key? key})
-      : super(key: key);
-  final List<Role> roles;
-  final List<Group> groups;
+  const DrawerListView(this.onModuleChanged, {Key? key}) : super(key: key);
+  // final List<String> modules;
   final ValueChanged<String> onModuleChanged;
   @override
   Widget build(BuildContext context) {
-    List<Widget> list = populateMenuAndGroups(context, roles, groups);
+    List<Widget> list = populateMenu(context);
     return ListView(
       children: list,
     );
   }
 
-  List<Widget> populateMenuAndGroups(
-      BuildContext context, List<Role> roles, List<Group> groups) {
+  List<Widget> populateMenu(BuildContext context) {
     var list = <Widget>[
       DrawerHeader(
         decoration: const BoxDecoration(color: Colors.blue),
@@ -370,23 +353,23 @@ class DrawerListView extends StatelessWidget {
         ),
       )
     ];
-    List<String> modules = [];
-    List<String> sgroups = [];
-    List<String> sRoles = [];
-    for (var role in roles) {
-      sRoles.add(role.name);
-      for (var appModule in role.appModules) {
-        modules.add(appModule.name);
-      }
-    }
-    for (var group in groups) {
-      sgroups.add(group.groupName);
-    }
+    // List<String> modules = [];
+    // List<String> sgroups = [];
+    // List<String> sRoles = [];
+    // for (var role in roles) {
+    //   sRoles.add(role.name);
+    //   for (var appModule in role.appModules) {
+    //     modules.add(appModule.name);
+    //   }
+    // }
+    // for (var group in groups) {
+    //   sgroups.add(group.groupName);
+    // }
 
-    context
-        .read<LocalRepository>()
-        .updateRolesModulesGroups(sRoles, modules, sgroups);
-    modules = modules.toSet().toList();
+    List<String> modules =
+        context.read<LocalRepository>().currentUser()?.modules ?? [];
+    // .updateRolesModulesGroups(sRoles, modules, sgroups);
+    // modules = modules.toSet().toList();
     if (modules.contains('module')) {
       list.add(ListTile(
         title: const Text('Modules'),

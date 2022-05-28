@@ -29,6 +29,16 @@ class DefaultFirebaseOptions {
           'DefaultFirebaseOptions have not been configured for macos - '
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
+      case TargetPlatform.windows:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
+      case TargetPlatform.linux:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for linux - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -48,7 +58,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCDIrGm5qU1CMg9BBxYIwxWXRlWsQyKzY4',
-    appId: '1:94374287489:android:629aa1b060b91318abd580',
+    appId: '1:94374287489:android:a4384cb6ccdc2ed1abd580',
     messagingSenderId: '94374287489',
     projectId: 'voucher-3d35e',
     storageBucket: 'voucher-3d35e.appspot.com',
@@ -56,11 +66,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCIH2uwZMN2WEchwLECjWu9uywux3X3-cs',
-    appId: '1:94374287489:ios:e6bde9b882879de3abd580',
+    appId: '1:94374287489:ios:60beadcbd84612d2abd580',
     messagingSenderId: '94374287489',
     projectId: 'voucher-3d35e',
     storageBucket: 'voucher-3d35e.appspot.com',
+    androidClientId: '94374287489-1rpp9atbmk8q1jllfi68lggoc51948q2.apps.googleusercontent.com',
     iosClientId: '94374287489-abdn3h91n6o06c1ikqlpsfm095ob8glg.apps.googleusercontent.com',
-    iosBundleId: 'com.babysteps.voucher',
+    iosBundleId: 'com.babystep.voucher',
   );
 }

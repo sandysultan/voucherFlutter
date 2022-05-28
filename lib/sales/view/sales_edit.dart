@@ -17,44 +17,33 @@ import 'package:voucher/sales/cubit/sales_edit_power_cubit.dart';
 import 'package:voucher/sales/sales.dart';
 
 class SalesEdit extends StatelessWidget {
-  const SalesEdit(this.item, {Key? key}) : super(key: key);
+  const SalesEdit(this.item, this.groupName, {Key? key}) : super(key: key);
   final Kiosk item;
+  final String groupName;
 
-  static Route<Sales?> route(Kiosk item) {
+  static Route<Sales?> route(Kiosk item, String groupName) {
     return MaterialPageRoute<Sales?>(
       settings: const RouteSettings(name: '/sales_edit'),
-      builder: (context) => SalesEdit(item),
+      builder: (context) => SalesEdit(item, groupName),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-        future: FirebaseAuth.instance.currentUser?.getIdToken(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (context) =>
-                      VoucherCubit(snapshot.data!)..loadVouchers(),
-                ),
-                BlocProvider(
-                  create: (context) => SalesEditSaveCubit(snapshot.data!),
-                ),
-                BlocProvider(
-                  create: (context) =>
-                      SalesEditPowerCubit(snapshot.data!)..get(item.id),
-                ),
-              ],
-              child: _SalesView(item),
-            );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        });
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => VoucherCubit()..loadVouchers(groupName),
+        ),
+        BlocProvider(
+          create: (context) => SalesEditSaveCubit(),
+        ),
+        BlocProvider(
+          create: (context) => SalesEditPowerCubit()..get(item.id),
+        ),
+      ],
+      child: _SalesView(item),
+    );
   }
 }
 
@@ -82,6 +71,7 @@ class _SalesViewState extends State<_SalesView> {
 
   int _total = 0;
   int _kioskProfit = 0;
+  int _voucherSold = 0;
   int _debt = 0;
   int _powerCost = 0;
   List<VoucherItem> _vouchers = [];
@@ -149,12 +139,21 @@ class _SalesViewState extends State<_SalesView> {
                           VoucherRecap(vouchers: _vouchers, subTotal: 0),
                       onChanged: (VoucherRecap? value) {
                         setState(() {
+
                           _subtotal = value?.subTotal ?? 0;
-                          _kioskProfit =
-                              (_subtotal * widget.item.kioskShare).floor();
+                          if(widget.item.kioskShare<1) {
+                            _kioskProfit =
+                                (_subtotal * widget.item.kioskShare).floor();
+                          }else{
+                            _voucherSold = 0;
+                            for(VoucherItem voucher in value?.vouchers??[]){
+                              _voucherSold +=voucher.stock-voucher.balance-voucher.damage;
+                            }
+                            _kioskProfit = _voucherSold * widget.item.kioskShare.toInt();
+                          }
                           _total = getTotal();
                           _cashController.text =
-                              ((_total/1000).floor()*1000).toString();
+                              ((_total / 1000).floor() * 1000).toString();
                         });
                       },
                       validator: (VoucherRecap? value) {
@@ -195,12 +194,14 @@ class _SalesViewState extends State<_SalesView> {
                         }
                       }
                       _subtotal = 0;
+                      _voucherSold = 0;
                       for (var voucher in state.vouchers) {
                         var stock = mapLastDetails.containsKey(voucher.id)
                             ? mapLastDetails[voucher.id]!.stock -
                                 mapLastDetails[voucher.id]!.balance +
                                 mapLastDetails[voucher.id]!.restock
                             : 0;
+                        _voucherSold+=stock;
                         _vouchers.add(VoucherItem(
                             id: voucher.id,
                             name: voucher.name,
@@ -211,11 +212,16 @@ class _SalesViewState extends State<_SalesView> {
                             restock: 0));
                         _subtotal += voucher.price * (stock);
                       }
-                      _kioskProfit =
-                          (_subtotal * widget.item.kioskShare).floor();
+                      if(widget.item.kioskShare<1) {
+                        _kioskProfit =
+                            (_subtotal * widget.item.kioskShare).floor();
+                      }else{
+
+                        _kioskProfit = _voucherSold * widget.item.kioskShare.toInt();
+                      }
                       _total = getTotal();
                       _cashController.text =
-                          ((_total/1000).floor()*1000).toString();
+                          ((_total / 1000).floor() * 1000).toString();
                       logger.d('listener finish');
                     });
                   }
@@ -231,14 +237,14 @@ class _SalesViewState extends State<_SalesView> {
                   children: [
                     TableRow(children: [
                       Text(
-                        'Kiosks Profit ' +
-                            (widget.item.kioskShare * 100.0).toString() +
-                            '%',
+                        widget.item.kioskShare<1?
+                        'Kiosk Profit ${widget.item.kioskShare * 100.0}%':
+                        'Kiosk Profit ${widget.item.kioskShare.toInt()} x $_voucherSold',
                         textAlign: TextAlign.end,
                       ),
                       const Text(' = '),
                       Text(
-                        '(' + formatter.format(_kioskProfit) + ')',
+                        '(${formatter.format(_kioskProfit)})',
                         textAlign: TextAlign.right,
                       )
                     ]),
@@ -286,7 +292,7 @@ class _SalesViewState extends State<_SalesView> {
                               _debt = int.parse(lastDebt);
                               _total = getTotal();
                               _cashController.text =
-                                  ((_total/1000).floor()*1000).toString();
+                                  ((_total / 1000).floor() * 1000).toString();
                             });
                           }
                         },
@@ -330,11 +336,9 @@ class _SalesViewState extends State<_SalesView> {
                                               var formatter =
                                                   DateFormat('dd-MMM-yy');
                                               return Text(
-                                                'Last power ' +
-                                                    formatter.format(state
-                                                        .sales!.date!
-                                                        .toLocal()),
-                                                style: TextStyle(fontSize: 12),
+                                                'Last power ${formatter.format(state.sales!.date!.toLocal())}',
+                                                style: const TextStyle(
+                                                    fontSize: 12),
                                               );
                                             }
                                           } else if (state
@@ -358,7 +362,8 @@ class _SalesViewState extends State<_SalesView> {
                                             _power = value ?? false;
                                             _total = getTotal();
                                             _cashController.text =
-                                                ((_total/1000).floor()*1000).toString();
+                                                ((_total / 1000).floor() * 1000)
+                                                    .toString();
                                           });
                                         },
                                   value: _power,
@@ -378,10 +383,11 @@ class _SalesViewState extends State<_SalesView> {
                                       EasyLoading.showError(state.message);
                                     } else if (state
                                         is SalesEditUpdatePowerSuccess) {
-                                      EasyLoading.showSuccess('Updating success');
-                                      setState((){
-                                        _powerCost=state.kiosk.powerCost;
-                                        _total=getTotal();
+                                      EasyLoading.showSuccess(
+                                          'Updating success');
+                                      setState(() {
+                                        _powerCost = state.kiosk.powerCost;
+                                        _total = getTotal();
                                       });
                                     }
                                   },
@@ -463,9 +469,7 @@ class _SalesViewState extends State<_SalesView> {
                               verticalAlignment:
                                   TableCellVerticalAlignment.middle,
                               child: Text(
-                                '(' +
-                                    formatter.format(_power ? _powerCost : 0) +
-                                    ')',
+                                '(${formatter.format(_power ? _powerCost : 0)})',
                                 textAlign: TextAlign.right,
                               ),
                             )
@@ -533,31 +537,39 @@ class _SalesViewState extends State<_SalesView> {
                                       ListTile(
                                         title: const Text('Camera'),
                                         leading: const Icon(Icons.camera),
-                                        onTap: () async {
-                                          final ImagePicker _picker =
+                                        onTap: () {
+                                          final ImagePicker picker =
                                               ImagePicker();
-                                          final XFile? photo =
-                                              await _picker.pickImage(
-                                                  source: ImageSource.camera);
-                                          if (photo != null) {
-                                            await cropImage(photo);
-                                          }
-                                          Navigator.of(context).pop();
+                                          picker
+                                              .pickImage(
+                                                  source: ImageSource.camera)
+                                              .then((photo) {
+                                            if (photo != null) {
+                                              cropImage(photo).then((value) =>
+                                                  Navigator.of(context).pop());
+                                            } else {
+                                              Navigator.of(context).pop();
+                                            }
+                                          });
                                         },
                                       ),
                                       ListTile(
                                         title: const Text('Gallery'),
                                         leading: const Icon(Icons.image_search),
-                                        onTap: () async {
-                                          final ImagePicker _picker =
+                                        onTap: () {
+                                          final ImagePicker picker =
                                               ImagePicker();
-                                          final XFile? image =
-                                              await _picker.pickImage(
-                                                  source: ImageSource.gallery);
-                                          if (image != null) {
-                                            await cropImage(image);
-                                          }
-                                          Navigator.of(context).pop();
+                                          picker
+                                              .pickImage(
+                                                  source: ImageSource.gallery)
+                                              .then((image) {
+                                            if (image != null) {
+                                              cropImage(image).then((value) =>
+                                                  Navigator.of(context).pop());
+                                            } else {
+                                              Navigator.of(context).pop();
+                                            }
+                                          });
                                         },
                                       ),
                                     ],
@@ -640,26 +652,27 @@ class _SalesViewState extends State<_SalesView> {
                                   fundTransferred: false,
                                   date: date);
 
-                              var result =
-                                  await Navigator.of(context).push<bool>(
+                              Navigator.of(context)
+                                  .push<bool>(
                                 SalesKioskInvoice.route(
                                     kiosk: widget.item,
                                     sales: sales,
                                     imageLocalPath: _receiptPath),
-                              );
-                              if (result == true) {
-                                String? token = await FirebaseAuth
-                                    .instance.currentUser
-                                    ?.getIdToken();
-                                if (token != null) {
-                                  context.read<SalesEditSaveCubit>().save(
-                                      token,
-                                      sales,
-                                      _receiptPath != null
-                                          ? File(_receiptPath!)
-                                          : null);
+                              )
+                                  .then((result) {
+                                if (result == true) {
+                                  FirebaseAuth.instance.currentUser
+                                      ?.getIdToken()
+                                      .then((token) {
+                                    context.read<SalesEditSaveCubit>().save(
+                                        token,
+                                        sales,
+                                        _receiptPath != null
+                                            ? File(_receiptPath!)
+                                            : null);
+                                  });
                                 }
-                              }
+                              });
                             }
                           },
                           child: const Text('Continue')));
@@ -705,7 +718,7 @@ class _SalesViewState extends State<_SalesView> {
   int getTotal() {
     // return 0;
     return _subtotal -
-        (widget.item.kioskShare * _subtotal).floor() -
+        _kioskProfit -
         (_power ? _powerCost : 0) +
         _debt;
   }

@@ -2,6 +2,9 @@ part of 'transfer_page_bloc.dart';
 
 abstract class TransferPageEvent extends Equatable {
   const TransferPageEvent();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class SalesRefresh extends TransferPageEvent{
@@ -24,5 +27,11 @@ class AddTransfer extends TransferPageEvent{
 
   @override
   List<Object?> get props => [transfer,receipt];
+
+}
+
+class GetGroups extends TransferPageEvent{
+
+  const GetGroups();
 
 }
