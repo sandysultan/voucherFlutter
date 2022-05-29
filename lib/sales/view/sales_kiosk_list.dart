@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:repository/repository.dart';
 
 import '../sales.dart';
@@ -87,12 +88,22 @@ class _SalesKioskListState extends State<SalesKioskList> {
                 },
                 icon: const Icon(Icons.chevron_left)),
             Expanded(
-                child: Text(
+                child: InkWell(
+                  onTap: () async{
+                    DateTime? newDate = await showMonthPicker(context: context, initialDate: _dateTime);
+                    if(newDate!=null && newDate != _dateTime){
+                      setState((){
+                        _dateTime=newDate;
+                      });
+                    }
+                  },
+                  child: Text(
               _isYear
-                  ? _yearFormatter.format(_dateTime)
-                  : _monthFormatter.format(_dateTime),
+                    ? _yearFormatter.format(_dateTime)
+                    : _monthFormatter.format(_dateTime),
               textAlign: TextAlign.center,
-            )),
+            ),
+                )),
             IconButton(
                 onPressed: () {
                   DateTime newDate;

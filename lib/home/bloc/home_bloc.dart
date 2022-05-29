@@ -18,6 +18,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc() : super(HomeInitial()) {
     on<LoadModules>(_loadModules);
     on<AppbarAction>((event,emit)=>emit(AppBarClicked(event.id)));
+    on<UpdateFCM>(_updateFCM);
   }
 
   Future<void> _loadModules(LoadModules event, Emitter<HomeState> emit) async {
@@ -28,7 +29,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       await repository!.getUserModules(event.uid).then((value) {
         if (value?.status == 1) {
           if (value?.modules.isEmpty == true) {
-            emit(EmptyRole('You don' 't have any role, please contact admin'));
+            emit(const EmptyRole('You don' 't have any role, please contact admin'));
           } else {
             emit(RoleLoaded(value!.modules));
           }
@@ -54,5 +55,41 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         emit(EmptyRole(error.toString()));
       }
     }
+  }
+
+  Future<void> _updateFCM(UpdateFCM event, Emitter<HomeState> emit) async {
+
+    try {
+      String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      repository = UserRepository(HttpClient.getClient(token: token));
+      if(event.fcm==null){
+
+        await repository!.deleteFcm().then((value) {
+          if (value?.status == 1) {
+            logger.d('fcm updated');
+          } else {
+            logger.d('fcm update failed');
+          }
+        }).catchError((error, stack) {
+          logger.e(error);
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        });
+      }else {
+        await repository!.updateFcm(event.fcm!).then((value) {
+          if (value?.status == 1) {
+            logger.d('fcm updated');
+          } else {
+            logger.d('fcm update failed');
+          }
+        }).catchError((error, stack) {
+          logger.e(error);
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        });
+      }
+      } catch (error, stack) {
+      logger.e(error);
+      FirebaseCrashlytics.instance.recordError(error, stack);
+    }
+
   }
 }

@@ -1,22 +1,24 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:http_client/http_client.dart';
 import 'package:intl/intl.dart';
+import 'package:local_repository/local_repository.dart';
+
 import 'package:repository/repository.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voucher/sales/bloc/sales_kiosk_invoice_bloc.dart';
-import 'dart:ui' as ui;
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:http_client/http_client.dart';
+import 'package:voucher/sales/view/image_preview.dart';
 
 class SalesKioskInvoice extends StatelessWidget {
   const SalesKioskInvoice(
@@ -66,6 +68,7 @@ class SalesKioskView extends StatelessWidget {
   final String? imageLocalPath;
 
   final GlobalKey genKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     DateFormat dateFormat = DateFormat('dd MMMM yyyy');
@@ -148,17 +151,7 @@ class SalesKioskView extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    numberFormat.format(detail.price) +
-                        ' x ( ' +
-                        detail.stock.toString() +
-                        ' - ' +
-                        detail.balance.toString() +
-                        ' - ' +
-                        detail.damage.toString() +
-                        ' = ' +
-                        (detail.stock - detail.balance - detail.damage)
-                            .toString() +
-                        ' )',
+                    '${numberFormat.format(detail.price)} x ( ${detail.stock} - ${detail.balance} - ${detail.damage} = ${detail.stock - detail.balance - detail.damage} )',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 12),
                   ),
@@ -212,9 +205,7 @@ class SalesKioskView extends StatelessWidget {
             TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
                 child: Text(
-                  'Kiosk Profit ' +
-                      (sales.kioskProfit / (subtotal / 100.0)).toString() +
-                      '% : ',
+                  'Kiosk Profit ${sales.kioskProfit / (subtotal / 100.0)}% : ',
                   style: const TextStyle(color: Colors.white),
                   textAlign: TextAlign.right,
                 )),
@@ -222,7 +213,7 @@ class SalesKioskView extends StatelessWidget {
                 child: Padding(
               padding: const EdgeInsets.all(8),
               child: Text(
-                '(' + numberFormat.format(sales.kioskProfit) + ')',
+                '(${numberFormat.format(sales.kioskProfit)})',
                 style: const TextStyle(color: Colors.white),
                 textAlign: TextAlign.right,
               ),
@@ -411,8 +402,8 @@ class SalesKioskView extends StatelessWidget {
                             const TableCell(child: Text('Date')),
                             const TableCell(child: Text(' : ')),
                             TableCell(
-                                child: Text(dateFormat
-                                    .format((sales.date ?? DateTime.now()).toLocal()))),
+                                child: Text(dateFormat.format(
+                                    (sales.date ?? DateTime.now()).toLocal()))),
                           ]),
                           if (sales.id != null) ...[
                             TableRow(children: [
@@ -425,18 +416,17 @@ class SalesKioskView extends StatelessWidget {
                             const TableCell(child: Text('Kiosk')),
                             const TableCell(child: Text(' : ')),
                             TableCell(
-                                child: Text('[' +
-                                    kiosk.id.toString() +
-                                    '] ' +
-                                    kiosk.kioskName)),
+                                child:
+                                    Text('[${kiosk.id}] ${kiosk.kioskName}')),
                           ]),
                           TableRow(children: [
                             const TableCell(child: Text('Operator')),
                             const TableCell(child: Text(' : ')),
                             TableCell(
                                 child: Text((sales.user?.name ?? "") +
-
-                                    (sales.user?.phone==null ? '':(', Telp: 0'+sales.user!.phone!.substring(2))))),
+                                    (sales.user?.phone == null
+                                        ? ''
+                                        : (', Telp: 0${sales.user!.phone!.substring(2)}')))),
                           ]),
                         ],
                       ),
@@ -459,21 +449,30 @@ class SalesKioskView extends StatelessWidget {
                 ),
               ),
             ),
-            if (imageLocalPath != null) ...[
-              Image.file(
-                File(imageLocalPath!),
-                height: 150,
-                width: 150,
-                fit: BoxFit.contain,
-              )
-            ],
-            if (sales.receipt == true) ...[
-              Image.network(
-                HttpClient.server + 'sales/' + sales.id.toString() + '/receipt',
-                width: 150,
-                height: 150,
-                fit: BoxFit.contain,
-              )
+            if (imageLocalPath != null || sales.receipt == true) ...[
+              InkWell(
+                  onTap: () {
+                    Navigator.of(context).push<void>(
+                      ImagePreview.route(
+                          local: imageLocalPath,
+                          network: sales.receipt == true
+                              ? '${HttpClient.server}sales/${sales.id}/receipt'
+                              : null),
+                    );
+                  },
+                  child: imageLocalPath != null
+                      ? Image.file(
+                          File(imageLocalPath!),
+                          height: 150,
+                          width: 150,
+                          fit: BoxFit.contain,
+                        )
+                      : Image.network(
+                          '${HttpClient.server}sales/${sales.id}/receipt',
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.contain,
+                        ))
             ],
             if (sales.id == null) ...[
               Align(
@@ -498,11 +497,8 @@ class SalesKioskView extends StatelessWidget {
                       EasyLoading.showError(state.message);
                     } else if (state is UpdateWhatsappSuccess) {
                       EasyLoading.showSuccess('Whatsapp number saved');
-                      sendWhatsapp(context,
-                          state.kiosk.whatsapp!,
-                          dateFormat.format(sales.date ?? DateTime.now()) +
-                              " Rp. " +
-                              numberFormat.format(sales.total));
+                      sendWhatsapp(context, state.kiosk.whatsapp!,
+                          "${dateFormat.format(sales.date ?? DateTime.now())} Rp. ${numberFormat.format(sales.total)}");
                     }
                   },
                   child: Align(
@@ -510,7 +506,7 @@ class SalesKioskView extends StatelessWidget {
                     child: ElevatedButton(
                         onPressed: () async {
                           if (kiosk.whatsapp?.isNotEmpty == true) {
-                            int? result = await showDialog<int>(
+                            showDialog<int>(
                                 context: context,
                                 builder: (_) => AlertDialog(
                                       title: const Text('Send invoice'),
@@ -532,18 +528,15 @@ class SalesKioskView extends StatelessWidget {
                                             },
                                             child: const Text('Change Number')),
                                       ],
-                                    ));
-                            if (result == 1) {
-                              sendWhatsapp(context,
-                                  kiosk.whatsapp!,
-                                  dateFormat.format(
-                                          sales.date ?? DateTime.now()) +
-                                      " Rp. " +
-                                      numberFormat.format(sales.total));
-                            } else if (result == 2) {
-                              changeNumber(
-                                  context: context, whatsapp: kiosk.whatsapp);
-                            }
+                                    )).then((result) {
+                              if (result == 1) {
+                                sendWhatsapp(context, kiosk.whatsapp!,
+                                    "${dateFormat.format(sales.date ?? DateTime.now())} Rp. ${numberFormat.format(sales.total)}");
+                              } else if (result == 2) {
+                                changeNumber(
+                                    context: context, whatsapp: kiosk.whatsapp);
+                              }
+                            });
                           } else {
                             changeNumber(
                               context: context,
@@ -572,35 +565,35 @@ class SalesKioskView extends StatelessWidget {
   }
 
   void sendWhatsapp(BuildContext context, String number, String message) async {
-
-  //   launchUrl(Uri.parse("https://wa.me/$number?text=$message"));
-  // }
-  //
-  // openwhatsapp() async{
-  //   var whatsapp ="+919144040888";
-    var whatsappURlAndroid = Uri.parse("whatsapp://send?phone="+number+"&text=$message");
+    //   launchUrl(Uri.parse("https://wa.me/$number?text=$message"));
+    // }
+    //
+    // openwhatsapp() async{
+    //   var whatsapp ="+919144040888";
+    var whatsappURlAndroid =
+        Uri.parse("whatsapp://send?phone=$number&text=$message");
     var whatappURLIos = Uri.parse("https://wa.me/$number?text=$message");
-    if(Platform.isIOS){
+    if (Platform.isIOS) {
       // for iOS phone only
-      if( await canLaunchUrl(whatappURLIos)){
+      if (await canLaunchUrl(whatappURLIos)) {
         await launchUrl(whatappURLIos);
-      }else{
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("whatsapp not installed")));
       }
-    }else{
+    } else {
       // android , web
-      if( await canLaunchUrl(whatsappURlAndroid)){
+      if (await canLaunchUrl(whatsappURlAndroid)) {
         await launchUrl(whatsappURlAndroid);
-      }else{
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("whatsapp not installed")));
       }
     }
   }
 
-  void changeNumber({required BuildContext context, String? whatsapp}) async {
-    String? whatsapp = await showDialog(
+  void changeNumber({required BuildContext context, String? whatsapp}) {
+    showDialog(
       context: context,
       builder: (_) {
         var formWhatsappKey = GlobalKey<FormBuilderState>();
@@ -631,11 +624,12 @@ class SalesKioskView extends StatelessWidget {
           ],
         );
       },
-    );
-    if (whatsapp != null) {
-      context
-          .read<SalesKioskInvoiceBloc>()
-          .add(UpdateKioskWhatsapp(kiosk.copy(whatsapp: whatsapp)));
-    }
+    ).then((whatsapp) {
+      if (whatsapp != null) {
+        context
+            .read<SalesKioskInvoiceBloc>()
+            .add(UpdateKioskWhatsapp(kiosk.copy(whatsapp: whatsapp)));
+      }
+    });
   }
 }

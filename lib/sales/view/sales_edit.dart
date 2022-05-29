@@ -197,7 +197,7 @@ class _SalesViewState extends State<_SalesView> {
                       _voucherSold = 0;
                       for (var voucher in state.vouchers) {
                         var stock = mapLastDetails.containsKey(voucher.id)
-                            ? mapLastDetails[voucher.id]!.stock -
+                            ?
                                 mapLastDetails[voucher.id]!.balance +
                                 mapLastDetails[voucher.id]!.restock
                             : 0;

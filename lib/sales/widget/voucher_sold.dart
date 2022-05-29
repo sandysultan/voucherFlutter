@@ -58,7 +58,7 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
     for (VoucherItem voucher in _vouchers ?? []) {
       _subTotal +=
           voucher.price * (voucher.stock - voucher.balance - voucher.damage);
-      logger.d('_subTotal ' + _subTotal.toString());
+      logger.d('_subTotal $_subTotal');
     }
     super.initState();
   }

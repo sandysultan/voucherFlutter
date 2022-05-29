@@ -16,4 +16,10 @@ abstract class UserRepository{
 
   @GET('/user/{uid}/groups')
   Future<UserGroupsResponse?> getGroup(@Query('module') String module);
+
+  @POST('/user/{uid}/updateFcm')
+  Future<BaseResponse?> updateFcm(@Field('fcm') String fcm);
+
+  @POST('/user/{uid}/deleteFcm')
+  Future<BaseResponse?> deleteFcm();
 }

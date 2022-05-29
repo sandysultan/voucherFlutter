@@ -9,6 +9,8 @@ import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
 import 'package:voucher/transfer/transfer.dart';
 
+var _logger = Logger();
+
 class TransferPage extends StatelessWidget {
   const TransferPage({Key? key}) : super(key: key);
 
@@ -116,7 +118,6 @@ class _TransferRefreshableView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Logger().d('_SalesRefreshableView build');
     return RefreshIndicator(
       onRefresh: () {
         final itemsBloc = BlocProvider.of<TransferPageBloc>(context)
@@ -127,14 +128,16 @@ class _TransferRefreshableView extends StatelessWidget {
       child: BlocBuilder<TransferPageBloc, TransferPageState>(
         buildWhen: (previous, current) =>
             previous != current &&
-            (current is SalesLoaded || current is SalesEmpty),
+            (current is SalesLoaded || current is SalesEmpty || current is SalesLoading),
         builder: (context, state) {
           if (state is SalesLoaded) {
-            final items = state.sales;
+            _logger.d('state is SalesLoaded');
+            // final items = state.sales;
             // var languageCode2 = Localizations.localeOf(context).;
             // var formatter = DateFormat('dd MMMM yyyy hh:mm:ss',);
             return _SalesList(
-              items: items,
+              key: ObjectKey(state.sales),
+              items: state.sales,
               groupName: groupName,
             );
           } else if (state is SalesEmpty) {
@@ -172,6 +175,8 @@ class _SalesListState extends State<_SalesList> {
 
   @override
   void initState() {
+    _logger.d('_SalesListState initState');
+    _selected.clear();
     for (var element in widget.items) {
       _selected[element] = true;
     }

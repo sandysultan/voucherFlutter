@@ -32,6 +32,9 @@ class SalesListLoaded extends TransferPageState {
 class SalesEmpty extends TransferPageState {
 }
 
+class SalesLoading extends TransferPageState {
+}
+
 class AddTransferLoading extends TransferPageState {
 }
 

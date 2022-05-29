@@ -22,3 +22,11 @@ class AppbarAction extends HomeEvent {
   @override
   List<Object?> get props => [id];
 }
+
+class UpdateFCM extends HomeEvent {
+  final String? fcm;
+  const UpdateFCM(this.fcm);
+
+  @override
+  List<Object?> get props => [fcm];
+}

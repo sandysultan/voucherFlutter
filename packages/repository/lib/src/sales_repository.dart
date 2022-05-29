@@ -13,6 +13,8 @@ abstract class SalesRepository{
   Future<SalesResponse?> getSales(
       {@Query('groupName') required String groupName,
       @Query('status') int? status,
+      @Query('year') int? year,
+      @Query('month') int? month,
       @Query('groupByKiosk') bool? groupByKiosk,
       @Query('fundTransferred') bool? fundTransferred});
 

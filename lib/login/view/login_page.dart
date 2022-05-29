@@ -84,9 +84,9 @@ class _LoginView extends StatelessWidget {
                 inputFormatters: [
                   FilteringTextInputFormatter.deny(RegExp(regExString)),
                 ],
-                // initialValue: kDebugMode ? "sandysultan@gmail.com" : "",
+                initialValue: kDebugMode ? "sandysultan@gmail.com" : "",
                 // initialValue: kDebugMode ? "emilda.rika@gmail.com" : "",
-                initialValue: kDebugMode ? "dianrosadi2020@gmail.com" : "",
+                // initialValue: kDebugMode ? "dianrosadi2020@gmail.com" : "",
                 // initialValue: kDebugMode ? "devis.mathinu.supriadi@gmail.com" : "",
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
@@ -99,8 +99,8 @@ class _LoginView extends StatelessWidget {
               ),
               FormBuilderTextField(
                 name: "password",
-                // initialValue: kDebugMode ? "sr@1nkD4Yiv" : "",
-                initialValue: kDebugMode ? "iVoucher2022" : "",
+                initialValue: kDebugMode ? "sr@1nkD4Yiv" : "",
+                // initialValue: kDebugMode ? "iVoucher2022" : "",
                 // initialValue: kDebugMode ? "murt1Y4NI" : "",
                 style: const TextStyle(color: Colors.white),
                 decoration:

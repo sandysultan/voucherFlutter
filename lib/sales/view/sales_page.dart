@@ -119,7 +119,6 @@ class _SalesRefreshableView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Logger().d('_SalesRefreshableView build');
     return RefreshIndicator(
       onRefresh: () {
         final itemsBloc = BlocProvider.of<SalesBloc>(context)

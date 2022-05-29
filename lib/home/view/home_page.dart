@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voucher/login/login.dart';
 import 'package:voucher/sales/sales.dart';
+import 'package:voucher/sales_report/sales_report.dart';
 import 'package:voucher/transfer/transfer.dart';
 import 'package:voucher/user/view/user_page.dart';
 
@@ -26,7 +28,6 @@ class HomePage extends StatelessWidget {
     return MaterialPageRoute<void>(builder: (_) => HomePage());
   }
 
-  final logger = Logger();
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +46,36 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+
+
+  void setupToken() {
+    // Get the token each time the application loads
+    FirebaseMessaging.instance.getToken().then((token)
+    {
+      context.read<HomeBloc>().add(UpdateFCM(token??""));
+    });
+
+    // Save the initial token to the database
+
+
+    // Any time the token refreshes, store this in the database too.
+    FirebaseMessaging.instance.onTokenRefresh.listen(((token){
+      context.read<HomeBloc>().add(UpdateFCM(token));
+    }));
+  }
+
+
   @override
   void initState() {
     logger.d('uid: ${FirebaseAuth.instance.currentUser!.uid}');
+
+    setupToken();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        EasyLoading.showInfo(message.notification?.body??"");
+        // print('Message also contained a notification: ${message.notification}');
+      }
+    });
     context
         .read<HomeBloc>()
         .add(LoadModules(FirebaseAuth.instance.currentUser!.uid));
@@ -89,6 +117,7 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> logout(BuildContext context) async {
+    context.read<HomeBloc>().add(const UpdateFCM(null));
     FirebaseAuth.instance.signOut().then((value) {
       context.read<LocalRepository>().clear();
       Navigator.of(context).pushAndRemoveUntil<void>(
@@ -156,6 +185,9 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       case 'transfer':
         _activePage = const TransferPage();
         break;
+      case 'salesReport':
+        _activePage = const SalesReportPage();
+        break;
       default:
         _activePage = Center(
           child: Image.asset('assets/construction.png'),
@@ -196,6 +228,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     switch (module) {
       case 'sale':
         return 'Sales';
+      case 'salesReport':
+        return 'Sales Report';
       case 'transfer':
         return 'Transfer';
     }
@@ -407,6 +441,14 @@ class DrawerListView extends StatelessWidget {
         title: const Text('Sales'),
         onTap: () async {
           onModuleChanged('sale');
+        },
+      ));
+    }
+    if (modules.contains('salesReport')) {
+      list.add(ListTile(
+        title: const Text('Sales Report'),
+        onTap: () async {
+          onModuleChanged('salesReport');
         },
       ));
     }
