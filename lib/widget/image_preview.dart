@@ -10,7 +10,7 @@ class ImagePreview extends StatelessWidget {
 
   static Route<String?> route({String? network, String? local}) {
     return MaterialPageRoute<String?>(
-      settings: const RouteSettings(name: '/login'),
+      settings: const RouteSettings(name: '/image'),
       builder: (context) => ImagePreview(network:network,local:local),
     );
   }

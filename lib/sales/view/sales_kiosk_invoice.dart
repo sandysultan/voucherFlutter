@@ -18,7 +18,7 @@ import 'package:repository/repository.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voucher/sales/bloc/sales_kiosk_invoice_bloc.dart';
-import 'package:voucher/sales/view/image_preview.dart';
+import 'package:voucher/widget/image_preview.dart';
 
 class SalesKioskInvoice extends StatelessWidget {
   const SalesKioskInvoice(

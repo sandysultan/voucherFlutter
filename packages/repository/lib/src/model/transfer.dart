@@ -9,14 +9,18 @@ class Transfer {
   final int? id;
   final String? operator;
   final int total;
+  final DateTime? createdAt;
   final List<int>? salesIds;
+  final List<Sales>? sales;
 
 
   Transfer({
     this.id,
     this.operator,
     required this.total,
+    this.createdAt,
     this.salesIds,
+    this.sales,
   });
 
 

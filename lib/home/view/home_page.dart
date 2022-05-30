@@ -14,6 +14,7 @@ import 'package:voucher/login/login.dart';
 import 'package:voucher/sales/sales.dart';
 import 'package:voucher/sales_report/sales_report.dart';
 import 'package:voucher/transfer/transfer.dart';
+import 'package:voucher/transfer_report/transfer_report.dart';
 import 'package:voucher/user/view/user_page.dart';
 
 import '../home.dart';
@@ -188,6 +189,9 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       case 'salesReport':
         _activePage = const SalesReportPage();
         break;
+      case 'transferReport':
+        _activePage = const TransferReportPage();
+        break;
       default:
         _activePage = Center(
           child: Image.asset('assets/construction.png'),
@@ -232,6 +236,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return 'Sales Report';
       case 'transfer':
         return 'Transfer';
+      case 'transferReport':
+        return 'Transfer Report';
     }
     return 'iVoucher';
   }
@@ -457,6 +463,14 @@ class DrawerListView extends StatelessWidget {
         title: const Text('Transfer'),
         onTap: () async {
           onModuleChanged('transfer');
+        },
+      ));
+    }
+    if (modules.contains('transferReport')) {
+      list.add(ListTile(
+        title: const Text('Transfer Report'),
+        onTap: () async {
+          onModuleChanged('transferReport');
         },
       ));
     }

@@ -78,7 +78,7 @@ class _SalesReportViewState extends State<_SalesReportView> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (widget.group.length > 1) ...[
+
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             child: Row(
@@ -86,6 +86,7 @@ class _SalesReportViewState extends State<_SalesReportView> {
               // crossAxisAlignment: CrossAxisAlignment.center,
               // textBaseline: TextBaseline.ideographic,
               children: [
+            if (widget.group.length > 1) ...[
                 Flexible(
                   flex: 1,
                   child: FormBuilderDropdown<String>(
@@ -108,7 +109,7 @@ class _SalesReportViewState extends State<_SalesReportView> {
                             month: _dateTime.month));
                         // });
                       }),
-                ),
+                )],
                 Flexible(
                   flex: 2,
                   child: Stack(
@@ -217,7 +218,7 @@ class _SalesReportViewState extends State<_SalesReportView> {
               ],
             ),
           )
-        ],
+        ,
         Expanded(
           child:
               _SalesRefreshableView(groupName: _groupName, dateTime: _dateTime),
@@ -330,13 +331,13 @@ class _SalesList extends StatelessWidget {
               child: SizedBox(
                 width: 200,
                 child: Table(
-                  columnWidths: {1:FixedColumnWidth(20)},
+                  columnWidths: const {1:FixedColumnWidth(20)},
                   children: [
                     TableRow(children: [
-                      TableCell(
+                      const TableCell(
                         child: Text('Total Cash'),
                       ),
-                      TableCell(
+                      const TableCell(
                         child: Text(' : '),
                       ),
                       TableCell(
@@ -344,10 +345,10 @@ class _SalesList extends StatelessWidget {
                       ),
                     ]),
                     TableRow(children: [
-                      TableCell(
+                      const TableCell(
                         child: Text('Operator Fee'),
                       ),
-                      TableCell(
+                      const TableCell(
                         child: Text(' : '),
                       ),
                       TableCell(
@@ -355,10 +356,10 @@ class _SalesList extends StatelessWidget {
                       ),
                     ]),
                     TableRow(children: [
-                      TableCell(
+                      const TableCell(
                         child: Text('Total'),
                       ),
-                      TableCell(
+                      const TableCell(
                         child: Text(' : '),
                       ),
                       TableCell(

@@ -16,5 +16,7 @@ export 'sales_with_power_response.dart';
 export 'sales_detail.dart';
 export 'app_module.dart';
 export 'base_response.dart';
+export 'add_transfer_response.dart';
+export 'transfer_response.dart';
 export 'voucher_response.dart';
 export 'group_voucher_response.dart';
