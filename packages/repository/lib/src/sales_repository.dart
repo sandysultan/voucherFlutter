@@ -26,5 +26,10 @@ abstract class SalesRepository{
   Future<BaseResponse?> uploadReceipt(@Path('id') int id,
       @Part(value: 'receipt') File receipt,);
 
+  @POST('/sales/{id}/uploadReceipt')
+  @MultiPart()
+  Future<BaseResponse?> uploadReceiptForWeb(@Path('id') int id,
+      @Part(value: 'receipt') List<int> receipt,);
+
 
 }

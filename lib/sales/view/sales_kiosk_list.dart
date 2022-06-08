@@ -10,13 +10,14 @@ import '../sales.dart';
 final logger = Logger();
 
 class SalesKioskList extends StatefulWidget {
-  const SalesKioskList(this.item, {Key? key}) : super(key: key);
+  const SalesKioskList(this.item, {Key? key,this.dateTime}) : super(key: key);
   final Kiosk item;
+  final DateTime? dateTime;
 
-  static Route<void> route(Kiosk item) {
+  static Route<void> route(Kiosk item, {DateTime? dateTime}) {
     return MaterialPageRoute<void>(
       settings: const RouteSettings(name: '/sales_kiosk_list'),
-      builder: (context) => SalesKioskList(item),
+      builder: (context) => SalesKioskList(item,dateTime: dateTime),
     );
   }
 
@@ -34,8 +35,8 @@ class _SalesKioskListState extends State<SalesKioskList> {
 
   @override
   void initState() {
-    _dateTime = DateTime.now();
-    _lastDateTime = DateTime.now();
+    _dateTime = widget.dateTime??DateTime.now();
+    _lastDateTime = widget.dateTime??DateTime.now();
     super.initState();
   }
 

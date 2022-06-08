@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
@@ -13,7 +15,7 @@ class SalesEditSaveCubit extends Cubit<SalesEditSaveState> {
   final logger = Logger();
   SalesEditSaveCubit() : super(SalesEditSaveInitial());
 
-  Future<void> save(String token, Sales body,File? receipt) async {
+  Future<void> save(String token, Sales body,File? receipt,Future<Uint8List>? receiptByte) async {
     var logger = Logger();
     emit(SalesEditSaveLoading());
     try{
@@ -22,8 +24,16 @@ class SalesEditSaveCubit extends Cubit<SalesEditSaveState> {
 
       if(salesResponse!=null){
         if(salesResponse.status==1) {
-          if(receipt!=null){
-            var result = await repository.uploadReceipt(salesResponse.sales.id!, receipt);
+          if(receipt!=null || receiptByte!=null){
+            BaseResponse? result;
+            if(receiptByte!=null){
+              List<int> cache = await receiptByte;
+              result = await repository.uploadReceiptForWeb(
+                  salesResponse.sales.id!, cache);
+            }else {
+              result = await repository.uploadReceipt(
+                  salesResponse.sales.id!, receipt!);
+            }
             if(result!=null && result.status == 1) {
               emit(SalesEditSaved(salesResponse.sales.copy(receipt: true)));
             }else{
@@ -41,7 +51,9 @@ class SalesEditSaveCubit extends Cubit<SalesEditSaveState> {
 
     } on Exception catch (error,stack) {
       logger.e(error);
-      FirebaseCrashlytics.instance.recordError(error, stack);
+      if(!kIsWeb) {
+        FirebaseCrashlytics.instance.recordError(error, stack);
+      }
       if(error is DioError){
         emit(SalesEditError(HttpClient.getDioErrorMessage(error)));
       }else {

@@ -10,6 +10,8 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:voucher/constant/app_constant.dart';
+import 'package:voucher/expense/expense.dart';
 import 'package:voucher/login/login.dart';
 import 'package:voucher/sales/sales.dart';
 import 'package:voucher/sales_report/sales_report.dart';
@@ -19,11 +21,14 @@ import 'package:voucher/user/view/user_page.dart';
 
 import '../home.dart';
 
-const int actionSortByName = 0;
-const int actionSortByDays = 1;
+//used for resetting state, so it can triggered twice
+const int actionNothing = 0;
+const int actionSortByName = 1;
+const int actionSortByDays = 2;
+const int actionAddExpense = 3;
 
 class HomePage extends StatelessWidget {
-  HomePage({Key? key}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   static Route route() {
     return MaterialPageRoute<void>(builder: (_) => HomePage());
@@ -177,20 +182,23 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
   getChild(String? module) {
     switch (module) {
-      case 'user':
+      case ModuleConstant.user:
         _activePage = const UserPage();
         break;
-      case 'sale':
+      case ModuleConstant.sale:
         _activePage = const SalesPage();
         break;
-      case 'transfer':
+      case ModuleConstant.transfer:
         _activePage = const TransferPage();
         break;
-      case 'salesReport':
+      case ModuleConstant.salesReport:
         _activePage = const SalesReportPage();
         break;
-      case 'transferReport':
+      case ModuleConstant.transferReport:
         _activePage = const TransferReportPage();
+        break;
+      case ModuleConstant.expense:
+        _activePage = const ExpensePage();
         break;
       default:
         _activePage = Center(
@@ -202,7 +210,14 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
   List<Widget> getActions(String? module) {
     switch (module) {
-      case 'sale':
+      case ModuleConstant.expense:
+        return [
+          IconButton(onPressed: (){
+            context.read<HomeBloc>().add(const AppbarAction(actionAddExpense));
+            context.read<HomeBloc>().add(const AppbarAction(actionNothing));
+          }, icon: const Icon(Icons.add))
+        ];
+      case ModuleConstant.sale:
         return [
           PopupMenuButton<int>(
               onSelected: (value) {
@@ -230,14 +245,16 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
   String getTitle(String? module) {
     switch (module) {
-      case 'sale':
+      case ModuleConstant.sale:
         return 'Sales';
-      case 'salesReport':
+      case ModuleConstant.salesReport:
         return 'Sales Report';
-      case 'transfer':
+      case ModuleConstant.transfer:
         return 'Transfer';
-      case 'transferReport':
+      case ModuleConstant.transferReport:
         return 'Transfer Report';
+      case ModuleConstant.expense:
+        return 'Expenses';
     }
     return 'iVoucher';
   }
@@ -410,67 +427,76 @@ class DrawerListView extends StatelessWidget {
         context.read<LocalRepository>().currentUser()?.modules ?? [];
     // .updateRolesModulesGroups(sRoles, modules, sgroups);
     // modules = modules.toSet().toList();
-    if (modules.contains('module')) {
+    if (modules.contains(ModuleConstant.module)) {
       list.add(ListTile(
         title: const Text('Modules'),
         onTap: () async {
-          onModuleChanged('module');
+          onModuleChanged(ModuleConstant.module);
         },
       ));
     }
-    if (modules.contains('role')) {
+    if (modules.contains(ModuleConstant.role)) {
       list.add(ListTile(
         title: const Text('Roles'),
         onTap: () async {
-          onModuleChanged('role');
+          onModuleChanged(ModuleConstant.role);
         },
       ));
     }
-    if (modules.contains('user')) {
+    if (modules.contains(ModuleConstant.user)) {
       list.add(ListTile(
         title: const Text('Users'),
         onTap: () async {
-          onModuleChanged('user');
+          onModuleChanged(ModuleConstant.user);
         },
       ));
     }
-    if (modules.contains('kiosk')) {
+    if (modules.contains(ModuleConstant.kiosk)) {
       list.add(ListTile(
         title: const Text('Kiosks'),
         onTap: () async {
-          onModuleChanged('kiosk');
+          onModuleChanged(ModuleConstant.kiosk);
         },
       ));
     }
-    if (modules.contains('sale')) {
+    if (modules.contains(ModuleConstant.sale)) {
       list.add(ListTile(
         title: const Text('Sales'),
         onTap: () async {
-          onModuleChanged('sale');
+          onModuleChanged(ModuleConstant.sale);
         },
       ));
     }
-    if (modules.contains('salesReport')) {
+    if (modules.contains(ModuleConstant.salesReport)) {
       list.add(ListTile(
         title: const Text('Sales Report'),
         onTap: () async {
-          onModuleChanged('salesReport');
+          onModuleChanged(ModuleConstant.salesReport);
         },
       ));
     }
-    if (modules.contains('transfer')) {
+    if (modules.contains(ModuleConstant.expense)) {
+      list.add(ListTile(
+        title: const Text('Expenses'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.expense);
+        },
+      ));
+    }
+
+    if (modules.contains(ModuleConstant.transfer)) {
       list.add(ListTile(
         title: const Text('Transfer'),
         onTap: () async {
-          onModuleChanged('transfer');
+          onModuleChanged(ModuleConstant.transfer);
         },
       ));
     }
-    if (modules.contains('transferReport')) {
+    if (modules.contains(ModuleConstant.transferReport)) {
       list.add(ListTile(
         title: const Text('Transfer Report'),
         onTap: () async {
-          onModuleChanged('transferReport');
+          onModuleChanged(ModuleConstant.transferReport);
         },
       ));
     }

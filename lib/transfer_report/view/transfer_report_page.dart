@@ -291,152 +291,150 @@ class _SalesList extends StatelessWidget {
   Widget build(BuildContext context) {
     NumberFormat numberFormat = NumberFormat('#,###');
     DateFormat dateFormat = DateFormat('d MMMM yyyy');
-    return Expanded(
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemBuilder: (context, index) {
-          Transfer item = items[index];
-          return ListTile(
-            onTap: () {
-              var cashTotal = 0;
-              for (Sales sales in item.sales ?? []) {
-                cashTotal += sales.cash;
-              }
-              showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                        content: SizedBox(
-                          width: double.maxFinite,
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: ListView.separated(
-                                    itemBuilder: (context, index) => ListTile(
-                                          title: Text(item.sales?[index].kiosk
-                                                  ?.kioskName ??
-                                              ""),
-                                          subtitle: Text(item
-                                                      .sales?[index].date ==
-                                                  null
-                                              ? ''
-                                              : dateFormat.format(
-                                                  item.sales![index].date!)),
-                                          trailing: Text(numberFormat
-                                              .format(item.sales![index].cash)),
-                                        ),
-                                    separatorBuilder: (context, index) =>
-                                        const Divider(),
-                                    itemCount: item.sales?.length ?? 0),
-                              ),
-                              Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Table(
-                                    columnWidths: const {
-                                      0: FixedColumnWidth(120),
-                                      1: FixedColumnWidth(20)
-                                    },
-                                    children: [
-                                      TableRow(children: [
-                                        const TableCell(
-                                            child: Text(
-                                          'Cash Total',
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                        const TableCell(
-                                            child: Text(
-                                          ' : ',
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                        TableCell(
-                                            child: Text(
-                                          numberFormat.format(cashTotal),
-                                          textAlign: TextAlign.right,
-                                          style: const TextStyle(fontSize: 12),
-                                        )),
-                                      ]),
-                                      TableRow(children: [
-                                        const TableCell(
-                                            child: Text(
-                                          'Operator Fee',
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                        const TableCell(
-                                            child: Text(
-                                          ' : ',
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                        TableCell(
-                                            child: Text(
-                                          numberFormat
-                                              .format((cashTotal / 10).ceil()),
-                                          textAlign: TextAlign.right,
-                                          style: const TextStyle(fontSize: 12),
-                                        )),
-                                      ]),
-                                      TableRow(children: [
-                                        const TableCell(
-                                            child: Text(
-                                          'Transfer Amount',
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                        const TableCell(
-                                            child: Text(
-                                          ' : ',
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                        TableCell(
-                                            child: Text(
-                                          numberFormat.format(cashTotal -
-                                              ((cashTotal / 10).ceil())),
-                                          textAlign: TextAlign.right,
-                                          style: const TextStyle(fontSize: 12),
-                                        )),
-                                      ]),
-                                    ],
-                                  ),
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        Transfer item = items[index];
+        return ListTile(
+          onTap: () {
+            var cashTotal = 0;
+            for (Sales sales in item.sales ?? []) {
+              cashTotal += sales.cash;
+            }
+            showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                      content: SizedBox(
+                        width: double.maxFinite,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ListView.separated(
+                                  itemBuilder: (context, index) => ListTile(
+                                        title: Text(item.sales?[index].kiosk
+                                                ?.kioskName ??
+                                            ""),
+                                        subtitle: Text(item
+                                                    .sales?[index].date ==
+                                                null
+                                            ? ''
+                                            : dateFormat.format(
+                                                item.sales![index].date!)),
+                                        trailing: Text(numberFormat
+                                            .format(item.sales![index].cash)),
+                                      ),
+                                  separatorBuilder: (context, index) =>
+                                      const Divider(),
+                                  itemCount: item.sales?.length ?? 0),
+                            ),
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Table(
+                                  columnWidths: const {
+                                    0: FixedColumnWidth(120),
+                                    1: FixedColumnWidth(20)
+                                  },
+                                  children: [
+                                    TableRow(children: [
+                                      const TableCell(
+                                          child: Text(
+                                        'Cash Total',
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                      const TableCell(
+                                          child: Text(
+                                        ' : ',
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                      TableCell(
+                                          child: Text(
+                                        numberFormat.format(cashTotal),
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(fontSize: 12),
+                                      )),
+                                    ]),
+                                    TableRow(children: [
+                                      const TableCell(
+                                          child: Text(
+                                        'Operator Fee',
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                      const TableCell(
+                                          child: Text(
+                                        ' : ',
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                      TableCell(
+                                          child: Text(
+                                        numberFormat
+                                            .format((cashTotal / 10).ceil()),
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(fontSize: 12),
+                                      )),
+                                    ]),
+                                    TableRow(children: [
+                                      const TableCell(
+                                          child: Text(
+                                        'Transfer Amount',
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                      const TableCell(
+                                          child: Text(
+                                        ' : ',
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                      TableCell(
+                                          child: Text(
+                                        numberFormat.format(cashTotal -
+                                            ((cashTotal / 10).ceil())),
+                                        textAlign: TextAlign.right,
+                                        style: const TextStyle(fontSize: 12),
+                                      )),
+                                    ]),
+                                  ],
                                 ),
-                              )
-                            ],
-                          ),
+                              ),
+                            )
+                          ],
                         ),
-                        actions: [
-                          TextButton(
-                              onPressed: () {
-                                Navigator.of(context).push<void>(
-                                  ImagePreview.route(
-                                      network:
-                                           '${HttpClient.server}transfer/${item.id}/receipt'
-                                          ),
-                                );
-                              },
-                              child: const Text('Receipt')),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Close')),
-                        ],
-                      ));
-            },
-            // leading: CircleAvatar(
-            //   backgroundColor: days >= 7 ? Colors.red : Colors.blue,
-            //   child: Text(
-            //     item.id.toString(),
-            //     style: const TextStyle(color: Colors.white),
-            //   ),
-            // ),
-            title: Text('Rp. ${numberFormat.format(item.total)}'),
-            // subtitle: Text(days > 0
-            //     ? "$days day(s) from last billing"
-            //     : ""),
-            subtitle: Text(dateFormat.format(item.createdAt!)),
-            trailing: Text('${item.sales?.length ?? 0} sales'),
-          );
-        },
-        separatorBuilder: (context, index) => const Divider(),
-        itemCount: items.length,
-      ),
+                      ),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).push<void>(
+                                ImagePreview.route(
+                                    network:
+                                         '${HttpClient.server}transfer/${item.id}/receipt'
+                                        ),
+                              );
+                            },
+                            child: const Text('Receipt')),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Close')),
+                      ],
+                    ));
+          },
+          // leading: CircleAvatar(
+          //   backgroundColor: days >= 7 ? Colors.red : Colors.blue,
+          //   child: Text(
+          //     item.id.toString(),
+          //     style: const TextStyle(color: Colors.white),
+          //   ),
+          // ),
+          title: Text('Rp. ${numberFormat.format(item.total)}'),
+          // subtitle: Text(days > 0
+          //     ? "$days day(s) from last billing"
+          //     : ""),
+          subtitle: Text(dateFormat.format(item.createdAt!)),
+          trailing: Text('${item.sales?.length ?? 0} sales'),
+        );
+      },
+      separatorBuilder: (context, index) => const Divider(),
+      itemCount: items.length,
     );
   }
 }

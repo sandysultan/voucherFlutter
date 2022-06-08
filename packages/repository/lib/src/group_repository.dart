@@ -13,4 +13,8 @@ abstract class GroupRepository{
   @GET('/group/{groupName}/vouchers')
   Future<GroupVoucherResponse?> getVouchers(@Path('groupName') String groupName);
 
+
+  @GET('/group/{groupName}/operators')
+  Future<GroupOperatorResponse?> getOperators(@Path('groupName') String groupName);
+
 }

@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
+import 'package:repository/repository.dart' as repository;
 import 'package:repository/repository.dart';
 
 part 'sales_event.dart';
@@ -18,6 +20,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     on<SalesRefresh>(_salesRefresh);
     on<SalesListRefresh>(_salesListRefresh);
     on<GetGroups>(_getGroups);
+    on<GetOperator>(_getOperator);
   }
 
 
@@ -39,7 +42,9 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
         }
       }).catchError((error, stack) {
         logger.e(error);
-        FirebaseCrashlytics.instance.recordError(error, stack);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
         emit(SalesEmpty());
       });
     }
@@ -61,7 +66,9 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
         }
       }).catchError((error, stack) {
         logger.e(error);
-        FirebaseCrashlytics.instance.recordError(error, stack);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
         emit(SalesEmpty());
       });
     }
@@ -84,12 +91,45 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
         }
       }).catchError((error, stack) {
         logger.e(error);
-        FirebaseCrashlytics.instance.recordError(error, stack);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
 
         if(error is DioError){
           emit(GetGroupFailed(HttpClient.getDioErrorMessage(error)));
         }else {
           emit(GetGroupFailed(error.toString()));
+        }
+      });
+    }
+  }
+
+
+  Future<void> _getOperator(GetOperator event, Emitter<SalesState> emit) async {
+    emit(GetOperatorsLoading());
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if(token==null){
+      emit(const GetOperatorsFailed('Authentication Failed'));
+    }else {
+      GroupRepository groupRepository = GroupRepository(HttpClient.getClient(token: token));
+      await groupRepository.getOperators(event.groupName)
+          .then((value) {
+        if (value?.status == 1) {
+          // Logger().d(value!.users);
+          emit(GetOperatorsSuccess(value!.operators));
+        } else {
+          emit(GetOperatorsFailed(value?.message??"Server error"));
+        }
+      }).catchError((error, stack) {
+        logger.e(error);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
+
+        if(error is DioError){
+          emit(GetOperatorsFailed(HttpClient.getDioErrorMessage(error)));
+        }else {
+          emit(GetOperatorsFailed(error.toString()));
         }
       });
     }

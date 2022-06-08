@@ -7,6 +7,7 @@ abstract class TransferPageEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+
 class SalesRefresh extends TransferPageEvent{
   final String groupName;
 

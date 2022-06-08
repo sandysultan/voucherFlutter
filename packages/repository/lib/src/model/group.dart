@@ -1,6 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:repository/repository.dart';
-import 'package:repository/src/model/app_module.dart';
 
 part 'group.g.dart';
 

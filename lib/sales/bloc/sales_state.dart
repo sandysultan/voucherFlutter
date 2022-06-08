@@ -53,4 +53,25 @@ class GetGroupFailed extends SalesState {
   List<Object> get props => [message];
 }
 
+class GetOperatorsLoading extends SalesState {
+}
+
+class GetOperatorsSuccess extends SalesState {
+  final List<repository.User> operators;
+
+  const GetOperatorsSuccess(this.operators);
+
+  @override
+  List<Object> get props => [operators];
+}
+
+class GetOperatorsFailed extends SalesState {
+  final String message;
+
+  const GetOperatorsFailed(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
 

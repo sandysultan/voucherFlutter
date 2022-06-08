@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
@@ -17,7 +18,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final logger = Logger();
   HomeBloc() : super(HomeInitial()) {
     on<LoadModules>(_loadModules);
-    on<AppbarAction>((event,emit)=>emit(AppBarClicked(event.id)));
+    on<AppbarAction>((event,emit){
+      logger.d('AppBarClicked ${event.id}');
+      emit(AppBarClicked(event.id));});
     on<UpdateFCM>(_updateFCM);
   }
 
@@ -38,7 +41,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         }
       }).catchError((error, stack) {
         logger.e(error);
-        FirebaseCrashlytics.instance.recordError(error, stack);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
         if(error is DioError){
           emit(EmptyRole(HttpClient.getDioErrorMessage(error)));
         }else {
@@ -47,7 +52,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       });
     }catch(error,stack){
       logger.e(error);
-      FirebaseCrashlytics.instance.recordError(error, stack);
+      if(!kIsWeb) {
+        FirebaseCrashlytics.instance.recordError(error, stack);
+      }
 
       if(error is DioError){
         emit(EmptyRole(HttpClient.getDioErrorMessage(error)));
@@ -72,7 +79,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           }
         }).catchError((error, stack) {
           logger.e(error);
-          FirebaseCrashlytics.instance.recordError(error, stack);
+          if(!kIsWeb) {
+            FirebaseCrashlytics.instance.recordError(error, stack);
+          }
         });
       }else {
         await repository!.updateFcm(event.fcm!).then((value) {
@@ -83,7 +92,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           }
         }).catchError((error, stack) {
           logger.e(error);
-          FirebaseCrashlytics.instance.recordError(error, stack);
+          if(!kIsWeb) {
+            FirebaseCrashlytics.instance.recordError(error, stack);
+          }
         });
       }
       } catch (error, stack) {

@@ -10,6 +10,7 @@ class Sales {
   final DateTime? date;
   final int kioskId;
   final String? operator;
+  final String? description;
   final int subtotal;
   final int kioskProfit;
   final int cash;
@@ -18,7 +19,8 @@ class Sales {
   final int total;
   final bool? receipt;
   final bool fundTransferred;
-  final User? user;
+  @JsonKey(name: 'operator_user')
+  final User? operatorUser;
   final Kiosk? kiosk;
 
   @JsonKey(name:'sales_details')
@@ -38,7 +40,8 @@ class Sales {
     this.receipt,
     required this.fundTransferred,
     this.salesDetails,
-    this.user,
+    this.operatorUser,
+    this.description,
     this.kiosk,
   });
 
@@ -48,6 +51,7 @@ class Sales {
     DateTime? date,
     int? kioskId,
     String? operator,
+    String? description,
     int? subtotal,
     int? kioskProfit,
     int? cash,
@@ -57,13 +61,14 @@ class Sales {
     bool? receipt,
     bool? fundTransferred,
     List<SalesDetail>? salesDetails,
-    User? user,
+    User? operatorUser,
   }){
     return Sales(
         id: id??this.id,
       date: date??this.date,
       kioskId: kioskId??this.kioskId,
       operator: operator??this.operator,
+      description: description??this.description,
       subtotal: subtotal??this.subtotal,
       kioskProfit: kioskProfit??this.kioskProfit,
       cash: cash??this.cash,
@@ -73,7 +78,7 @@ class Sales {
       receipt: receipt??this.receipt,
       fundTransferred: fundTransferred??this.fundTransferred,
       salesDetails: salesDetails??this.salesDetails,
-      user: user??this.user,
+      operatorUser: operatorUser??this.operatorUser,
     );
   }
 

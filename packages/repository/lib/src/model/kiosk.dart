@@ -6,6 +6,7 @@ part 'kiosk.g.dart';
 @JsonSerializable()
 class Kiosk {
   final String kioskName;
+  final String groupName;
   final int id;
   final double? latitude;
   final double? longitude;
@@ -20,6 +21,7 @@ class Kiosk {
 
   Kiosk({
     required this.kioskName,
+    required this.groupName,
     required this.id,
     this.latitude,
     this.longitude,
@@ -38,6 +40,7 @@ class Kiosk {
 
   Kiosk copy({
     String? kioskName,
+    String? groupName,
     int? id,
     double? latitude,
     double? longitude,
@@ -52,6 +55,7 @@ class Kiosk {
   }) {
     return Kiosk(
       kioskName: kioskName ?? this.kioskName,
+      groupName: groupName ?? this.groupName,
       id: id ?? this.id,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,

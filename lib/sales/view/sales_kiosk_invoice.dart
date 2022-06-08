@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -22,21 +23,22 @@ import 'package:voucher/widget/image_preview.dart';
 
 class SalesKioskInvoice extends StatelessWidget {
   const SalesKioskInvoice(
-      {Key? key, required this.kiosk, required this.sales, this.imageLocalPath})
+      {Key? key, required this.kiosk, required this.sales, this.imageLocalPath, this.imageMemory})
       : super(key: key);
 
   static Route<bool> route(
-      {required Kiosk kiosk, required Sales sales, String? imageLocalPath}) {
+      {required Kiosk kiosk, required Sales sales, String? imageLocalPath, Future<Uint8List>? imageMemory}) {
     return MaterialPageRoute<bool>(
       settings: const RouteSettings(name: '/sales_list'),
       builder: (context) => SalesKioskInvoice(
-          kiosk: kiosk, sales: sales, imageLocalPath: imageLocalPath),
+          kiosk: kiosk, sales: sales, imageLocalPath: imageLocalPath,imageMemory:imageMemory),
     );
   }
 
   final Kiosk kiosk;
   final Sales sales;
   final String? imageLocalPath;
+  final Future<Uint8List>? imageMemory;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class SalesKioskInvoice extends StatelessWidget {
             return BlocProvider(
               create: (context) => SalesKioskInvoiceBloc(snapshot.data!),
               child: SalesKioskView(
-                  kiosk: kiosk, sales: sales, imageLocalPath: imageLocalPath),
+                  kiosk: kiosk, sales: sales, imageLocalPath: imageLocalPath, imageMemory:imageMemory),
             );
           } else {
             return const Center(
@@ -60,12 +62,13 @@ class SalesKioskInvoice extends StatelessWidget {
 
 class SalesKioskView extends StatelessWidget {
   SalesKioskView(
-      {Key? key, required this.kiosk, required this.sales, this.imageLocalPath})
+      {Key? key, required this.kiosk, required this.sales, this.imageLocalPath, this.imageMemory})
       : super(key: key);
 
   final Kiosk kiosk;
   final Sales sales;
   final String? imageLocalPath;
+  final Future<Uint8List>? imageMemory;
 
   final GlobalKey genKey = GlobalKey();
 
@@ -423,10 +426,10 @@ class SalesKioskView extends StatelessWidget {
                             const TableCell(child: Text('Operator')),
                             const TableCell(child: Text(' : ')),
                             TableCell(
-                                child: Text((sales.user?.name ?? "") +
-                                    (sales.user?.phone == null
+                                child: Text((sales.operatorUser?.name ?? "") +
+                                    (sales.operatorUser?.phone == null
                                         ? ''
-                                        : (', Telp: 0${sales.user!.phone!.substring(2)}')))),
+                                        : (', Telp: 0${sales.operatorUser!.phone!.substring(2)}')))),
                           ]),
                         ],
                       ),
@@ -441,6 +444,7 @@ class SalesKioskView extends StatelessWidget {
                         },
                         children: salesDetail,
                       ),
+                      Text('Notes : ${sales.description??''}' ),
                       const SizedBox(
                         height: 16,
                       ),
@@ -461,7 +465,21 @@ class SalesKioskView extends StatelessWidget {
                     );
                   },
                   child: imageLocalPath != null
-                      ? Image.file(
+                      ? kIsWeb?
+                      FutureBuilder<Uint8List>(
+                        future: imageMemory,
+                          builder: (context,snapshot) {
+                          if(snapshot.connectionState==ConnectionState.done) {
+                            return Image.memory(
+                              snapshot.requireData,
+                              height: 150,
+                              width: 150,
+                              fit: BoxFit.contain,);
+                          } else{
+                            return const Center(child: CircularProgressIndicator(),);
+                          }
+                          })
+                      :Image.file(
                           File(imageLocalPath!),
                           height: 150,
                           width: 150,

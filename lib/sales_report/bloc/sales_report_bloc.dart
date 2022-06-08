@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
@@ -56,7 +57,9 @@ class SalesReportBloc extends Bloc<SalesReportEvent, SalesReportState> {
         }
       }).catchError((error, stack) {
         logger.e(error);
-        FirebaseCrashlytics.instance.recordError(error, stack);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
         emit(SalesEmpty(error.toString()));
       });
     }
@@ -79,7 +82,9 @@ class SalesReportBloc extends Bloc<SalesReportEvent, SalesReportState> {
         }
       }).catchError((error, stack) {
         logger.e(error);
-        FirebaseCrashlytics.instance.recordError(error, stack);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
 
         if (error is DioError) {
           emit(GetGroupFailed(HttpClient.getDioErrorMessage(error)));

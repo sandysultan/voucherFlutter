@@ -1,17 +1,30 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:image_cropper/image_cropper.dart';
+
+import '../../cropper/ui_helper.dart'
+    if (dart.library.io) '../../cropper/mobile_ui_helper.dart'
+    if (dart.library.html) '../../cropper/web_ui_helper.dart';
+
+// import 'cropper/ui_helper.dart'
+// if (dart.library.io) 'cropper/mobile_ui_helper.dart'
+// if (dart.library.html) 'cropper/web_ui_helper.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
+import 'package:repository/repository.dart' as repo;
+import 'package:voucher/constant/app_constant.dart';
 import 'package:voucher/sales/cubit/sales_edit_save_cubit.dart';
 import 'package:voucher/sales/cubit/sales_edit_power_cubit.dart';
 import 'package:voucher/sales/sales.dart';
@@ -37,6 +50,9 @@ class SalesEdit extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => SalesEditSaveCubit(),
+        ),
+        BlocProvider(
+          create: (context) => SalesBloc(),
         ),
         BlocProvider(
           create: (context) => SalesEditPowerCubit()..get(item.id),
@@ -78,13 +94,23 @@ class _SalesViewState extends State<_SalesView> {
 
   final _cashController = TextEditingController();
 
+  late List<String>? _modules;
+
+  Future<Uint8List>? _receiptByte;
+
   @override
   void initState() {
+    _modules = context.read<LocalRepository>().currentUser()?.modules;
     if (widget.item.sales?.isNotEmpty == true) {
       _lastSales = widget.item.sales![0];
       _debt = _lastSales == null ? 0 : (_lastSales!.total - _lastSales!.cash);
     }
     _powerCost = widget.item.powerCost;
+    if (_modules?.contains(ModuleConstant.saleOperator) == true) {
+      context
+          .read<SalesBloc>()
+          .add(GetOperator(groupName: widget.item.groupName));
+    }
     super.initState();
   }
 
@@ -99,33 +125,67 @@ class _SalesViewState extends State<_SalesView> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              context
-                          .read<LocalRepository>()
-                          .currentUser()
-                          ?.modules
-                          ?.contains('saleDate') ==
-                      true
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: FormBuilderDateTimePicker(
-                        name: 'date',
-                        initialDate: _lastSales != null
-                            ? _lastSales!.date!.add(const Duration(days: 7))
-                            : null,
-                        initialValue: _lastSales != null
-                            ? _lastSales!.date!.add(const Duration(days: 7))
-                            : null,
-                        lastDate: DateTime.now(),
-                        inputType: InputType.date,
-                        validator: FormBuilderValidators.required(),
-                        format: DateFormat('dd MMMM yyyy'),
-                        decoration: const InputDecoration(label: Text('Date')),
-                      ),
-                    )
-                  : Container(),
-              const SizedBox(
-                height: 16,
-              ),
+              if (_modules?.contains(ModuleConstant.saleDate) == true) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: FormBuilderDateTimePicker(
+                    name: 'date',
+                    initialDate: DateTime.now(),
+                    initialValue: DateTime.now(),
+                    lastDate: DateTime.now(),
+                    inputType: InputType.date,
+                    validator: FormBuilderValidators.required(),
+                    format: DateFormat('dd MMMM yyyy'),
+                    decoration: const InputDecoration(label: Text('Date')),
+                  ),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+              ],
+              if (_modules?.contains(ModuleConstant.saleOperator) == true) ...[
+                BlocBuilder<SalesBloc, SalesState>(
+                  buildWhen: (previous, current) =>
+                      previous != current &&
+                      (current is GetOperatorsLoading ||
+                          current is GetOperatorsSuccess ||
+                          current is GetOperatorsFailed),
+                  builder: (context, state) {
+                    if (state is GetOperatorsSuccess) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: FormBuilderDropdown<repo.User>(
+                          items: state.operators
+                              .map((e) => DropdownMenuItem<repo.User>(
+                                  value: e, child: Text(e.name)))
+                              .toList(),
+                          initialValue: state.operators
+                                  .where((user) =>
+                                      user.uid ==
+                                      FirebaseAuth.instance.currentUser?.uid)
+                                  .isNotEmpty
+                              ? state.operators.firstWhere((user) =>
+                                  user.uid ==
+                                  FirebaseAuth.instance.currentUser?.uid)
+                              : null,
+                          name: 'operator',
+                          decoration:
+                              const InputDecoration(label: Text('Operator')),
+                        ),
+                      );
+                    } else if (state is GetOperatorsLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+              ],
               BlocConsumer<VoucherCubit, VoucherState>(
                 buildWhen: (previous, current) =>
                     current is VoucherLoaded || current is VoucherLoading,
@@ -139,17 +199,19 @@ class _SalesViewState extends State<_SalesView> {
                           VoucherRecap(vouchers: _vouchers, subTotal: 0),
                       onChanged: (VoucherRecap? value) {
                         setState(() {
-
                           _subtotal = value?.subTotal ?? 0;
-                          if(widget.item.kioskShare<1) {
+                          if (widget.item.kioskShare < 1) {
                             _kioskProfit =
                                 (_subtotal * widget.item.kioskShare).floor();
-                          }else{
+                          } else {
                             _voucherSold = 0;
-                            for(VoucherItem voucher in value?.vouchers??[]){
-                              _voucherSold +=voucher.stock-voucher.balance-voucher.damage;
+                            for (VoucherItem voucher in value?.vouchers ?? []) {
+                              _voucherSold += voucher.stock -
+                                  voucher.balance -
+                                  voucher.damage;
                             }
-                            _kioskProfit = _voucherSold * widget.item.kioskShare.toInt();
+                            _kioskProfit =
+                                _voucherSold * widget.item.kioskShare.toInt();
                           }
                           _total = getTotal();
                           _cashController.text =
@@ -160,16 +222,16 @@ class _SalesViewState extends State<_SalesView> {
                         if (value != null) {
                           if (value.subTotal < 0) {
                             return 'subtotal must not minus';
-                          } else if (value.subTotal == 0) {
-                            int total = 0;
-                            for (var voucher in value.vouchers) {
-                              total += voucher.stock +
-                                  voucher.balance +
-                                  voucher.restock;
-                            }
-                            if (total == 0) {
-                              return 'Voucher data must not be all zero';
-                            }
+                            // } else if (value.subTotal == 0) {
+                            //   int total = 0;
+                            //   for (var voucher in value.vouchers) {
+                            //     total += voucher.stock +
+                            //         voucher.balance +
+                            //         voucher.restock;
+                            //   }
+                            //   if (total == 0) {
+                            //     return 'Voucher data must not be all zero';
+                            //   }
                           }
                         }
                         return null;
@@ -197,11 +259,10 @@ class _SalesViewState extends State<_SalesView> {
                       _voucherSold = 0;
                       for (var voucher in state.vouchers) {
                         var stock = mapLastDetails.containsKey(voucher.id)
-                            ?
-                                mapLastDetails[voucher.id]!.balance +
+                            ? mapLastDetails[voucher.id]!.balance +
                                 mapLastDetails[voucher.id]!.restock
                             : 0;
-                        _voucherSold+=stock;
+                        _voucherSold += stock;
                         _vouchers.add(VoucherItem(
                             id: voucher.id,
                             name: voucher.name,
@@ -212,12 +273,12 @@ class _SalesViewState extends State<_SalesView> {
                             restock: 0));
                         _subtotal += voucher.price * (stock);
                       }
-                      if(widget.item.kioskShare<1) {
+                      if (widget.item.kioskShare < 1) {
                         _kioskProfit =
                             (_subtotal * widget.item.kioskShare).floor();
-                      }else{
-
-                        _kioskProfit = _voucherSold * widget.item.kioskShare.toInt();
+                      } else {
+                        _kioskProfit =
+                            _voucherSold * widget.item.kioskShare.toInt();
                       }
                       _total = getTotal();
                       _cashController.text =
@@ -237,9 +298,9 @@ class _SalesViewState extends State<_SalesView> {
                   children: [
                     TableRow(children: [
                       Text(
-                        widget.item.kioskShare<1?
-                        'Kiosk Profit ${widget.item.kioskShare * 100.0}%':
-                        'Kiosk Profit ${widget.item.kioskShare.toInt()} x $_voucherSold',
+                        widget.item.kioskShare < 1
+                            ? 'Kiosk Profit ${widget.item.kioskShare * 100.0}%'
+                            : 'Kiosk Profit ${widget.item.kioskShare.toInt()} x $_voucherSold',
                         textAlign: TextAlign.end,
                       ),
                       const Text(' = '),
@@ -514,69 +575,90 @@ class _SalesViewState extends State<_SalesView> {
                   },
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: FormBuilderTextField(
+                  name: 'description',
+                  decoration: const InputDecoration(label: Text('Description')),
+                ),
+              ),
               const SizedBox(
                 height: 30,
               ),
               if (_receiptPath != null)
-                Image.file(
-                  File(_receiptPath!),
-                  height: 150,
-                  width: 150,
-                ),
+                if (kIsWeb)
+                  FutureBuilder<Uint8List>(
+                      future: _receiptByte,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          return Image.memory(
+                            snapshot.requireData,
+                            height: 200,
+                            width: 200,
+                          );
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      })
+                else
+                  Image.file(
+                    File(_receiptPath!),
+                    height: 200,
+                    width: 200,
+                  ),
               SizedBox(
-                  width: 150,
+                  width: 200,
                   child: ElevatedButton(
                       onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                                  title: const Text("Image Source"),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ListTile(
-                                        title: const Text('Camera'),
-                                        leading: const Icon(Icons.camera),
-                                        onTap: () {
-                                          final ImagePicker picker =
-                                              ImagePicker();
-                                          picker
-                                              .pickImage(
-                                                  source: ImageSource.camera)
-                                              .then((photo) {
-                                            if (photo != null) {
-                                              cropImage(photo).then((value) =>
-                                                  Navigator.of(context).pop());
-                                            } else {
-                                              Navigator.of(context).pop();
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      ListTile(
-                                        title: const Text('Gallery'),
-                                        leading: const Icon(Icons.image_search),
-                                        onTap: () {
-                                          final ImagePicker picker =
-                                              ImagePicker();
-                                          picker
-                                              .pickImage(
-                                                  source: ImageSource.gallery)
-                                              .then((image) {
-                                            if (image != null) {
-                                              cropImage(image).then((value) =>
-                                                  Navigator.of(context).pop());
-                                            } else {
-                                              Navigator.of(context).pop();
-                                            }
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ));
+                        if (kIsWeb) {
+                          pickFromGallery(context);
+                        } else {
+                          showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                    title: const Text("Image Source"),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ListTile(
+                                          title: const Text('Camera'),
+                                          leading: const Icon(Icons.camera),
+                                          onTap: () {
+                                            final ImagePicker picker =
+                                                ImagePicker();
+                                            picker
+                                                .pickImage(
+                                                    source: ImageSource.camera)
+                                                .then((photo) {
+                                              if (photo != null) {
+                                                cropImage(photo).then((value) =>
+                                                    Navigator.of(context)
+                                                        .pop());
+                                              } else {
+                                                Navigator.of(context).pop();
+                                              }
+                                            });
+                                          },
+                                        ),
+                                        ListTile(
+                                          title: const Text('Gallery'),
+                                          leading:
+                                              const Icon(Icons.image_search),
+                                          onTap: () {
+                                            pickFromGallery(context);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ));
+                        }
                       },
-                      child: const Text('Receipt'))),
+                      child: const Text('Receipt / Image Attach'))),
+              const SizedBox(
+                height: 8,
+              ),
               BlocConsumer<SalesEditSaveCubit, SalesEditSaveState>(
                 listener: (context, state) {
                   if (state is SalesEditSaveLoading) {
@@ -590,7 +672,7 @@ class _SalesViewState extends State<_SalesView> {
                 },
                 builder: (context, state) {
                   return SizedBox(
-                      width: 150,
+                      width: 200,
                       child: ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState?.saveAndValidate() ==
@@ -633,9 +715,12 @@ class _SalesViewState extends State<_SalesView> {
                               var currentUser =
                                   context.read<LocalRepository>().currentUser();
                               var modules = currentUser?.modules;
-                              var isOperator = (modules?.contains('saleAdd') ==
-                                      true &&
-                                  modules?.contains('saleOperator') == false);
+                              var isOperator =
+                                  (modules?.contains(ModuleConstant.saleAdd) ==
+                                          true &&
+                                      modules?.contains(
+                                              ModuleConstant.saleOperator) ==
+                                          false);
                               var sales = Sales(
                                   kioskId: widget.item.id,
                                   subtotal: _subtotal,
@@ -646,9 +731,19 @@ class _SalesViewState extends State<_SalesView> {
                                   total: _total,
                                   operator: isOperator
                                       ? FirebaseAuth.instance.currentUser?.uid
-                                      : null,
-                                  // user: isOperator?User(uid: FirebaseAuth.instance.currentUser?.uid, email: FirebaseAuth.instance.currentUser?.email, name: FirebaseAuth.instance.currentUser?.n):null,
+                                      : (_formKey.currentState
+                                                  ?.value['operator'] ==
+                                              null
+                                          ? null
+                                          : _formKey.currentState!
+                                              .value['operator'].uid),
+                                  operatorUser: isOperator
+                                      ? null
+                                      : _formKey
+                                          .currentState?.value['operator'],
                                   salesDetails: details,
+                                  description: _formKey
+                                      .currentState?.value['description'],
                                   fundTransferred: false,
                                   date: date);
 
@@ -657,7 +752,8 @@ class _SalesViewState extends State<_SalesView> {
                                 SalesKioskInvoice.route(
                                     kiosk: widget.item,
                                     sales: sales,
-                                    imageLocalPath: _receiptPath),
+                                    imageLocalPath: _receiptPath,
+                                    imageMemory: _receiptByte),
                               )
                                   .then((result) {
                                 if (result == true) {
@@ -669,7 +765,7 @@ class _SalesViewState extends State<_SalesView> {
                                         sales,
                                         _receiptPath != null
                                             ? File(_receiptPath!)
-                                            : null);
+                                            : null,_receiptByte);
                                   });
                                 }
                               });
@@ -688,6 +784,21 @@ class _SalesViewState extends State<_SalesView> {
     );
   }
 
+  void pickFromGallery(BuildContext context) {
+    final ImagePicker picker = ImagePicker();
+    picker.pickImage(source: ImageSource.gallery).then((image) {
+      if (image != null) {
+        cropImage(image).then((value) {
+          if (!kIsWeb) {
+            Navigator.of(context).pop();
+          }
+        });
+      } else {
+        Navigator.of(context).pop();
+      }
+    });
+  }
+
   Future<void> cropImage(XFile image) async {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: image.path,
@@ -698,28 +809,20 @@ class _SalesViewState extends State<_SalesView> {
         CropAspectRatioPreset.ratio4x3,
         CropAspectRatioPreset.ratio16x9
       ],
-      uiSettings: [
-        AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: false),
-        IOSUiSettings(
-          title: 'Cropper',
-        ),
-      ],
+      uiSettings: buildUiSettings(context),
     );
     if (croppedFile != null) {
       setState(() {
         _receiptPath = croppedFile.path;
+        if (kIsWeb) {
+          _receiptByte = croppedFile.readAsBytes();
+        }
       });
     }
   }
 
   int getTotal() {
     // return 0;
-    return _subtotal -
-        _kioskProfit -
-        (_power ? _powerCost : 0) +
-        _debt;
+    return _subtotal - _kioskProfit - (_power ? _powerCost : 0) + _debt;
   }
 }

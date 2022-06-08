@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
@@ -24,6 +25,7 @@ class TransferPageBloc extends Bloc<TransferPageEvent, TransferPageState> {
 
   Future<void> _salesRefresh(SalesRefresh event,
       Emitter<TransferPageState> emit) async {
+    emit(SalesLoading());
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (token == null) {
       emit(SalesEmpty());
@@ -43,7 +45,9 @@ class TransferPageBloc extends Bloc<TransferPageEvent, TransferPageState> {
         }
       }).catchError((error, stack) {
         logger.e(error);
-        FirebaseCrashlytics.instance.recordError(error, stack);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
         emit(SalesEmpty());
       });
     }
@@ -70,7 +74,9 @@ class TransferPageBloc extends Bloc<TransferPageEvent, TransferPageState> {
             emit(AddTransferError(error.toString()));
           }
           logger.e(error);
-          FirebaseCrashlytics.instance.recordError(error, stack);
+          if(!kIsWeb) {
+            FirebaseCrashlytics.instance.recordError(error, stack);
+          }
 
         });
 
@@ -82,7 +88,9 @@ class TransferPageBloc extends Bloc<TransferPageEvent, TransferPageState> {
         emit(AddTransferError(error.toString()));
       }
       logger.e(error);
-      FirebaseCrashlytics.instance.recordError(error, stack);
+      if(!kIsWeb) {
+        FirebaseCrashlytics.instance.recordError(error, stack);
+      }
     });
 
   }
@@ -105,7 +113,9 @@ class TransferPageBloc extends Bloc<TransferPageEvent, TransferPageState> {
         }
       }).catchError((error, stack) {
         logger.e(error);
-        FirebaseCrashlytics.instance.recordError(error, stack);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
 
         if(error is DioError){
           emit(GetGroupFailed(HttpClient.getDioErrorMessage(error)));

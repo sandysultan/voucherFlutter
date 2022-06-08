@@ -37,3 +37,13 @@ class GetGroups extends SalesEvent{
   const GetGroups();
 
 }
+
+
+class GetOperator extends SalesEvent{
+  final String groupName;
+
+  const GetOperator({required this.groupName});
+
+  @override
+  List<Object?> get props => [groupName];
+}
