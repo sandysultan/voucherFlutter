@@ -308,17 +308,7 @@ class _SalesList extends StatelessWidget {
                     sales.SalesKioskList.route(item, dateTime: dateTime),
                   );
                 },
-                // leading: CircleAvatar(
-                //   backgroundColor: days >= 7 ? Colors.red : Colors.blue,
-                //   child: Text(
-                //     item.id.toString(),
-                //     style: const TextStyle(color: Colors.white),
-                //   ),
-                // ),
                 title: Text(item.kioskName),
-                // subtitle: Text(days > 0
-                //     ? "$days day(s) from last billing"
-                //     : ""),
                 subtitle: Text('${item.sales?.length ?? 0} bills'),
                 trailing: Text(numberFormat.format(totalCashMap[item])),
               );

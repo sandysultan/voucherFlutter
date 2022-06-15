@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:http_client/http_client.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voucher/home/home.dart';
 import 'package:voucher/login/login.dart';
@@ -87,6 +88,8 @@ class _LoginView extends StatelessWidget {
                   FilteringTextInputFormatter.deny(RegExp(regExString)),
                 ],
                 initialValue: kDebugMode ? "sandysultan@gmail.com" : "",
+                // initialValue: kDebugMode ? 'for_test@purpose.only' : "",
+                // initialValue: kDebugMode ? "gunawandeni843@gmail.com" : "",
                 // initialValue: kDebugMode ? "emilda.rika@gmail.com" : "",
                 // initialValue: kDebugMode ? "dianrosadi2020@gmail.com" : "",
                 // initialValue: kDebugMode ? "devis.mathinu.supriadi@gmail.com" : "",
@@ -144,6 +147,11 @@ class _LoginView extends StatelessWidget {
                     onPressed: () async {
                       if (_formKey.currentState?.saveAndValidate() ==
                           true) {
+                        if(_formKey.currentState?.value['email']=='for_test@purpose.only'){
+                          HttpClient.setDev(true);
+                        }else{
+                          HttpClient.setDev(false);
+                        }
                         context
                             .read<LoginCubit>()
                             .login(_formKey.currentState!.value['email'],_formKey.currentState!.value['password']);

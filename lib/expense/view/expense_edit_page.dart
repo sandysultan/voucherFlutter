@@ -12,21 +12,22 @@ import 'package:repository/repository.dart';
 import 'package:voucher/expense/expense.dart';
 
 class ExpenseEditPage extends StatelessWidget {
-  const ExpenseEditPage({Key? key,
-    required this.groupName,
-    required this.date,
-    required this.groups})
+  const ExpenseEditPage(
+      {Key? key,
+      required this.groupName,
+      required this.date,
+      required this.groups})
       : super(key: key);
   final String groupName;
   final List<String> groups;
   final DateTime date;
 
-  static Route<bool?> route({required String groupName,
-    required DateTime date,
-    required List<String> groups}) {
+  static Route<bool?> route(
+      {required String groupName,
+      required DateTime date,
+      required List<String> groups}) {
     return MaterialPageRoute<bool?>(
-        builder: (_) =>
-            ExpenseEditPage(
+        builder: (_) => ExpenseEditPage(
               groups: groups,
               groupName: groupName,
               date: date,
@@ -36,7 +37,7 @@ class ExpenseEditPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ExpenseBloc(),
+      create: (context) => ExpenseBloc()..add(const GetExpenseType()),
       child: _ExpenseEditView(
         groupName: groupName,
         date: date,
@@ -47,10 +48,11 @@ class ExpenseEditPage extends StatelessWidget {
 }
 
 class _ExpenseEditView extends StatelessWidget {
-  const _ExpenseEditView({Key? key,
-    required this.groupName,
-    required this.date,
-    required this.groups})
+  const _ExpenseEditView(
+      {Key? key,
+      required this.groupName,
+      required this.date,
+      required this.groups})
       : super(key: key);
   final String groupName;
   final DateTime date;
@@ -89,12 +91,35 @@ class _ExpenseEditView extends StatelessWidget {
                   initialValue: date,
                   validator: FormBuilderValidators.required(),
                   decoration:
-                  const InputDecoration(label: Text('Date'), isDense: true),
+                      const InputDecoration(label: Text('Date'), isDense: true),
+                ),
+                BlocBuilder<ExpenseBloc, ExpenseState>(
+                  buildWhen: (previous, current) =>
+                      current is GetExpenseTypeLoading ||
+                      current is GetExpenseTypeSuccess ||
+                      current is GetExpenseTypeError,
+                  builder: (context, state) {
+                    if (state is GetExpenseTypeSuccess) {
+                      return FormBuilderDropdown<ExpenseType>(
+                        name: 'expenseType',
+                        items: state.expenseTypes
+                            .map((e) => DropdownMenuItem(
+                                value: e, child: Text(e.expenseTypeName)))
+                            .toList(),
+                        decoration:
+                        const InputDecoration(label: Text('Expense'),),
+                        validator: FormBuilderValidators.required(),
+                      );
+                    } else {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  },
                 ),
                 FormBuilderTextField(
                   name: 'description',
                   decoration: const InputDecoration(label: Text('Description')),
-                  validator: FormBuilderValidators.required(),
                 ),
                 FormBuilderTextField(
                   name: 'total',
@@ -103,13 +128,16 @@ class _ExpenseEditView extends StatelessWidget {
                   validator: FormBuilderValidators.required(),
                 ),
                 BlocListener<ExpenseBloc, ExpenseState>(
-                  listenWhen: (previous,current)=>current is AddExpenseLoading || current is AddExpenseSuccess || current is AddExpenseError,
+                  listenWhen: (previous, current) =>
+                      current is AddExpenseLoading ||
+                      current is AddExpenseSuccess ||
+                      current is AddExpenseError,
                   listener: (context, state) {
-                    if(state is AddExpenseLoading){
+                    if (state is AddExpenseLoading) {
                       EasyLoading.show(status: 'Saving expense');
-                    }else if(state is AddExpenseError){
+                    } else if (state is AddExpenseError) {
                       EasyLoading.showError(state.message);
-                    }else if(state is AddExpenseSuccess){
+                    } else if (state is AddExpenseSuccess) {
                       EasyLoading.showSuccess("Saving success");
                       Navigator.of(context).pop(true);
                     }
@@ -119,8 +147,7 @@ class _ExpenseEditView extends StatelessWidget {
                         if (formKey.currentState?.saveAndValidate() == true) {
                           showDialog(
                               context: context,
-                              builder: (_) =>
-                                  AlertDialog(
+                              builder: (_) => AlertDialog(
                                     title: const Text("Image Source"),
                                     content: Column(
                                       mainAxisSize: MainAxisSize.min,
@@ -130,17 +157,17 @@ class _ExpenseEditView extends StatelessWidget {
                                           leading: const Icon(Icons.camera),
                                           onTap: () {
                                             final ImagePicker picker =
-                                            ImagePicker();
+                                                ImagePicker();
                                             picker
                                                 .pickImage(
-                                                source: ImageSource.camera)
+                                                    source: ImageSource.camera)
                                                 .then((photo) {
                                               if (photo != null) {
                                                 cropImage(
-                                                    context, formKey, photo)
+                                                        context, formKey, photo)
                                                     .then((value) =>
-                                                    Navigator.of(context)
-                                                        .pop());
+                                                        Navigator.of(context)
+                                                            .pop());
                                               } else {
                                                 Navigator.of(context).pop();
                                               }
@@ -149,21 +176,21 @@ class _ExpenseEditView extends StatelessWidget {
                                         ),
                                         ListTile(
                                           title: const Text('Gallery'),
-                                          leading: const Icon(
-                                              Icons.image_search),
+                                          leading:
+                                              const Icon(Icons.image_search),
                                           onTap: () {
                                             final ImagePicker picker =
-                                            ImagePicker();
+                                                ImagePicker();
                                             picker
                                                 .pickImage(
-                                                source: ImageSource.gallery)
+                                                    source: ImageSource.gallery)
                                                 .then((image) {
                                               if (image != null) {
                                                 cropImage(
-                                                    context, formKey, image)
+                                                        context, formKey, image)
                                                     .then((value) =>
-                                                    Navigator.of(context)
-                                                        .pop());
+                                                        Navigator.of(context)
+                                                            .pop());
                                               } else {
                                                 Navigator.of(context).pop();
                                               }
@@ -210,7 +237,10 @@ class _ExpenseEditView extends StatelessWidget {
         context.read<ExpenseBloc>().add(AddExpense(
             Expense(
                 date: formKey.currentState?.value['date'],
-                groupName: groups.length > 1?formKey.currentState?.value['groupName']:groupName,
+                groupName: groups.length > 1
+                    ? formKey.currentState?.value['groupName']
+                    : groupName,
+                expenseTypeId: (formKey.currentState?.value['expenseType'] as ExpenseType).id,
                 total: int.parse(formKey.currentState?.value['total']),
                 description: formKey.currentState?.value['description'],
                 closed: false),

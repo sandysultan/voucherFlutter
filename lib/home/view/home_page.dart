@@ -13,6 +13,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voucher/constant/app_constant.dart';
 import 'package:voucher/expense/expense.dart';
 import 'package:voucher/login/login.dart';
+import 'package:voucher/notification/notification.dart';
 import 'package:voucher/sales/sales.dart';
 import 'package:voucher/sales_report/sales_report.dart';
 import 'package:voucher/transfer/transfer.dart';
@@ -26,12 +27,14 @@ const int actionNothing = 0;
 const int actionSortByName = 1;
 const int actionSortByDays = 2;
 const int actionAddExpense = 3;
+const int actionAllKiosk = 4;
+const int actionActiveKioskOnly = 5;
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   static Route route() {
-    return MaterialPageRoute<void>(builder: (_) => HomePage());
+    return MaterialPageRoute<void>(builder: (_) => const HomePage());
   }
 
 
@@ -201,9 +204,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         _activePage = const ExpensePage();
         break;
       default:
-        _activePage = Center(
-          child: Image.asset('assets/construction.png'),
-        );
+        _activePage = const NotificationPage();
     }
     return _activePage;
   }
@@ -219,6 +220,24 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         ];
       case ModuleConstant.sale:
         return [
+          PopupMenuButton<int>(
+              onSelected: (value) {
+                context.read<HomeBloc>().add(AppbarAction(value));
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Icon(Icons.filter_alt),
+              ),
+              itemBuilder: (context) => [
+                    const PopupMenuItem<int>(
+                      value: actionAllKiosk,
+                      child: Text('All Kiosk'),
+                    ),
+                    const PopupMenuItem<int>(
+                      value: actionActiveKioskOnly,
+                      child: Text('Active Kiosk Only'),
+                    ),
+                  ]),
           PopupMenuButton<int>(
               onSelected: (value) {
                 context.read<HomeBloc>().add(AppbarAction(value));
@@ -410,55 +429,47 @@ class DrawerListView extends StatelessWidget {
         ),
       )
     ];
-    // List<String> modules = [];
-    // List<String> sgroups = [];
-    // List<String> sRoles = [];
-    // for (var role in roles) {
-    //   sRoles.add(role.name);
-    //   for (var appModule in role.appModules) {
-    //     modules.add(appModule.name);
-    //   }
-    // }
-    // for (var group in groups) {
-    //   sgroups.add(group.groupName);
-    // }
 
     List<String> modules =
         context.read<LocalRepository>().currentUser()?.modules ?? [];
-    // .updateRolesModulesGroups(sRoles, modules, sgroups);
-    // modules = modules.toSet().toList();
-    if (modules.contains(ModuleConstant.module)) {
-      list.add(ListTile(
-        title: const Text('Modules'),
-        onTap: () async {
-          onModuleChanged(ModuleConstant.module);
-        },
-      ));
-    }
-    if (modules.contains(ModuleConstant.role)) {
-      list.add(ListTile(
-        title: const Text('Roles'),
-        onTap: () async {
-          onModuleChanged(ModuleConstant.role);
-        },
-      ));
-    }
-    if (modules.contains(ModuleConstant.user)) {
-      list.add(ListTile(
-        title: const Text('Users'),
-        onTap: () async {
-          onModuleChanged(ModuleConstant.user);
-        },
-      ));
-    }
-    if (modules.contains(ModuleConstant.kiosk)) {
-      list.add(ListTile(
-        title: const Text('Kiosks'),
-        onTap: () async {
-          onModuleChanged(ModuleConstant.kiosk);
-        },
-      ));
-    }
+    list.add(ListTile(
+          title: const Text('Notification'),
+          onTap: () async {
+            onModuleChanged('Notification');
+          },
+        ));
+    // if (modules.contains(ModuleConstant.module)) {
+    //   list.add(ListTile(
+    //     title: const Text('Modules'),
+    //     onTap: () async {
+    //       onModuleChanged(ModuleConstant.module);
+    //     },
+    //   ));
+    // }
+    // if (modules.contains(ModuleConstant.role)) {
+    //   list.add(ListTile(
+    //     title: const Text('Roles'),
+    //     onTap: () async {
+    //       onModuleChanged(ModuleConstant.role);
+    //     },
+    //   ));
+    // }
+    // if (modules.contains(ModuleConstant.user)) {
+    //   list.add(ListTile(
+    //     title: const Text('Users'),
+    //     onTap: () async {
+    //       onModuleChanged(ModuleConstant.user);
+    //     },
+    //   ));
+    // }
+    // if (modules.contains(ModuleConstant.kiosk)) {
+    //   list.add(ListTile(
+    //     title: const Text('Kiosks'),
+    //     onTap: () async {
+    //       onModuleChanged(ModuleConstant.kiosk);
+    //     },
+    //   ));
+    // }
     if (modules.contains(ModuleConstant.sale)) {
       list.add(ListTile(
         title: const Text('Sales'),

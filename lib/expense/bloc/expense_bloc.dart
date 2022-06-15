@@ -22,6 +22,7 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     on<GetGroups>(_getGroups);
     on<ExpenseRefresh>(_expenseRefresh);
     on<AddExpense>(_addExpense);
+    on<GetExpenseType>(_getExpenseType);
   }
 
   Future<void> _addExpense(AddExpense event, Emitter<ExpenseState> emit) async {
@@ -117,6 +118,35 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
           emit(GetGroupFailed(HttpClient.getDioErrorMessage(error)));
         } else {
           emit(GetGroupFailed(error.toString()));
+        }
+      });
+    }
+  }
+
+  Future<void> _getExpenseType(GetExpenseType event, Emitter<ExpenseState> emit) async {
+    emit(GetExpenseTypeLoading());
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (token == null) {
+      emit(const GetExpenseTypeError('Authentication Failed'));
+    } else {
+      ExpenseRepository repository =
+      ExpenseRepository(HttpClient.getClient(token: token));
+      await repository.getExpenseTypes().then((value) {
+        if (value?.status == 1) {
+          emit(GetExpenseTypeSuccess(value!.expenseTypes));
+        } else {
+          emit(GetExpenseTypeError(value?.message ?? "Server error"));
+        }
+      }).catchError((error, stack) {
+        _logger.e(error);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
+
+        if (error is DioError) {
+          emit(GetExpenseTypeError(HttpClient.getDioErrorMessage(error)));
+        } else {
+          emit(GetExpenseTypeError(error.toString()));
         }
       });
     }

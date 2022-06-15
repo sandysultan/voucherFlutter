@@ -7,8 +7,6 @@ abstract class ExpenseState extends Equatable {
 }
 
 class ExpensePageInitial extends ExpenseState {
-  @override
-  List<Object> get props => [];
 }
 
 
@@ -76,4 +74,26 @@ class AddExpenseSuccess extends ExpenseState {
   @override
   List<Object> get props => [expense];
 
+}
+
+class GetExpenseTypeLoading extends ExpenseState {
+}
+
+class GetExpenseTypeSuccess extends ExpenseState {
+
+  final List<ExpenseType> expenseTypes;
+
+  const GetExpenseTypeSuccess(this.expenseTypes);
+
+  @override
+  List<Object> get props => [expenseTypes];
+}
+
+class GetExpenseTypeError extends ExpenseState {
+  final String message;
+
+  const GetExpenseTypeError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }

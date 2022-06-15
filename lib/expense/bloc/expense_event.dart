@@ -12,6 +12,12 @@ class GetGroups extends ExpenseEvent{
 }
 
 
+
+class GetExpenseType extends ExpenseEvent{
+  const GetExpenseType();
+}
+
+
 class ExpenseRefresh extends ExpenseEvent{
   final String groupName;
   final int year;

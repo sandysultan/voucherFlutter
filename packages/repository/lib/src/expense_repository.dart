@@ -18,6 +18,9 @@ abstract class ExpenseRepository{
       @Query('year') required int year,
       @Query('month') required int month});
 
+  @GET('/expense_type')
+  Future<ExpenseTypeResponse?> getExpenseTypes();
+
   @POST('/expense/{id}/uploadReceipt')
   @MultiPart()
   Future<BaseResponse?> uploadReceipt(@Path('id') int id,

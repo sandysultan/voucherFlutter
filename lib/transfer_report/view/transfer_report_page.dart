@@ -418,17 +418,8 @@ class _SalesList extends StatelessWidget {
                       ],
                     ));
           },
-          // leading: CircleAvatar(
-          //   backgroundColor: days >= 7 ? Colors.red : Colors.blue,
-          //   child: Text(
-          //     item.id.toString(),
-          //     style: const TextStyle(color: Colors.white),
-          //   ),
-          // ),
           title: Text('Rp. ${numberFormat.format(item.total)}'),
-          // subtitle: Text(days > 0
-          //     ? "$days day(s) from last billing"
-          //     : ""),
+
           subtitle: Text(dateFormat.format(item.createdAt!)),
           trailing: Text('${item.sales?.length ?? 0} sales'),
         );

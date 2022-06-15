@@ -1,5 +1,6 @@
 class ModuleConstant{
   static const transfer='transfer';
+  static const transferAdd='transferAdd';
   static const user='user';
   static const sale='sale';
   static const salesReport='salesReport';

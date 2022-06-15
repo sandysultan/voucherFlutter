@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:intl/intl.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
@@ -169,7 +170,7 @@ class _SalesList extends StatelessWidget {
     return BlocBuilder<HomeBloc, HomeState>(
       buildWhen: (_, current) => current is AppBarClicked,
       builder: (context, state) {
-        List<Kiosk> sortedItems = items;
+        List<Kiosk> sortedItems = items.toList();
         if (state is AppBarClicked) {
           if (state.idAction == actionSortByName) {
             sortedItems.sort((a, b) => a.kioskName.compareTo(b.kioskName));
@@ -186,12 +187,18 @@ class _SalesList extends StatelessWidget {
                           .inDays
                       : 0);
             });
+          } else if (state.idAction == actionActiveKioskOnly) {
+            sortedItems.removeWhere((element) => element.status==false);
           }
         }
         return ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
           itemBuilder: (context, index) {
             final item = sortedItems[index];
+            final NumberFormat numberFormat = NumberFormat('#,###');
+            final debt = item.sales?.isNotEmpty == true
+                ? item.sales![0].total - item.sales![0].cash
+                : 0;
             final days = item.sales?.isNotEmpty == true
                 ? DateTime.now()
                     .difference(item.sales![0].date!.toLocal())
@@ -211,10 +218,20 @@ class _SalesList extends StatelessWidget {
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
-              title: Text(item.kioskName),
-              subtitle: Text(days > 0
-                  ? "$days day(s) from last billing"
-                  : ""),
+              title: Row(
+                children: [
+                  Text(item.kioskName),
+                  if(!item.status) ...[
+                    const Card(child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4.0),
+                      child: Text('inactive',style: TextStyle(fontSize: 12,color: Colors.grey),),
+                    )),
+                  ]
+                ],
+              ),
+              subtitle: Text("${days > 0
+                  ? "$days day(s), "
+                  : ""} Debt: ${numberFormat.format(debt)}"),
               // subtitle: Text(formatter.format(item.createdAt)),
               trailing: InkWell(
                 onTap: () async {

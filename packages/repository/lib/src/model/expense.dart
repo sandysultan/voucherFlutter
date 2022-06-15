@@ -8,6 +8,7 @@ part 'expense.g.dart';
 class Expense {
   final int? id;
   final int? fundRequestId;
+  final int expenseTypeId;
   final DateTime date;
   final String groupName;
   final int total;
@@ -21,6 +22,7 @@ class Expense {
   Expense({
     this.id,
     this.fundRequestId,
+    required this.expenseTypeId,
     required this.date,
     required this.groupName,
     required this.total,
