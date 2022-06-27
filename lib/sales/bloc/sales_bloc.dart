@@ -9,6 +9,7 @@ import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart' as repository;
 import 'package:repository/repository.dart';
+import 'package:voucher/constant/app_constant.dart';
 
 part 'sales_event.dart';
 part 'sales_state.dart';
@@ -25,6 +26,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
 
 
   Future<void> _salesRefresh(SalesRefresh event, Emitter<SalesState> emit) async {
+    emit(SalesLoading());
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     if(token==null){
       emit(SalesEmpty());
@@ -81,7 +83,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
       emit(const GetGroupFailed('Authentication Failed'));
     }else {
       UserRepository userRepository = UserRepository(HttpClient.getClient(token: token));
-      await userRepository.getGroup('sale')
+      await userRepository.getGroup(ModuleConstant.sale)
           .then((value) {
         if (value?.status == 1) {
           Logger().d(value!.groups);

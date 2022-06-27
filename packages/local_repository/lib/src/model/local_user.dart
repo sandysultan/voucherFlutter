@@ -15,4 +15,7 @@ class LocalUser {
   @HiveField(2)
   List<String>? groups;
 
+  @HiveField(3)
+  bool? dev;
+
 }

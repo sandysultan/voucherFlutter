@@ -8,4 +8,5 @@ export 'src/voucher_repository.dart';
 export 'src/notification_repository.dart';
 export 'src/group_repository.dart';
 export 'src/expense_repository.dart';
+export 'src/fund_request_repository.dart';
 export 'src/model/model.dart';

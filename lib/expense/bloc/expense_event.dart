@@ -6,15 +6,19 @@ abstract class ExpenseEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-
 class GetGroups extends ExpenseEvent{
-  const GetGroups();
 }
 
-
-
 class GetExpenseType extends ExpenseEvent{
-  const GetExpenseType();
+}
+
+class PayFundRequest extends ExpenseEvent{
+  final String imagePath;
+
+  const PayFundRequest(this.imagePath);
+
+  @override
+  List<Object?> get props => [];
 }
 
 

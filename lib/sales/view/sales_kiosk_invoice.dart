@@ -208,7 +208,7 @@ class SalesKioskView extends StatelessWidget {
             TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
                 child: Text(
-                  'Kiosk Profit ${sales.kioskProfit / (subtotal / 100.0)}% : ',
+                  'Kiosk Profit ${subtotal==0?0:(sales.kioskProfit / (subtotal / 100.0))}% : ',
                   style: const TextStyle(color: Colors.white),
                   textAlign: TextAlign.right,
                 )),

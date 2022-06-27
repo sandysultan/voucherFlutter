@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
+import 'package:voucher/constant/app_constant.dart';
 
 part 'transfer_report_event.dart';
 part 'transfer_report_state.dart';
@@ -62,7 +63,7 @@ class TransferReportBloc extends Bloc<TransferReportEvent, TransferReportState> 
     } else {
       UserRepository userRepository =
       UserRepository(HttpClient.getClient(token: token));
-      await userRepository.getGroup('salesReport').then((value) {
+      await userRepository.getGroup(ModuleConstant.salesReport).then((value) {
         if (value?.status == 1) {
           Logger().d(value!.groups);
           emit(GetGroupSuccess(value.groups));

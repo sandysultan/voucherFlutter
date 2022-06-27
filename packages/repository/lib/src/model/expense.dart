@@ -16,12 +16,15 @@ class Expense {
   final String description;
   final String? createdBy;
   final User? user;
+  @JsonKey(name: 'expense_type')
+  final ExpenseType? expenseType;
 
 
 
   Expense({
     this.id,
     this.fundRequestId,
+    this.expenseType,
     required this.expenseTypeId,
     required this.date,
     required this.groupName,

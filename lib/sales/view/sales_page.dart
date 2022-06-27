@@ -27,17 +27,24 @@ class _GetGroupView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SalesBloc, SalesState>(
-      buildWhen: (previous,current) => previous != current && (current is GetGroupLoading || current is GetGroupSuccess || current is GetGroupFailed),
+      buildWhen: (previous, current) =>
+          previous != current &&
+          (current is GetGroupLoading ||
+              current is GetGroupSuccess ||
+              current is GetGroupFailed),
       builder: (context, state) {
-
-        Logger().d('_GetGroupViewState rebuild with state $state' );
-        if(state is GetGroupLoading){
-          return const Center(child: CircularProgressIndicator(),);
-        }else if(state is GetGroupFailed){
-          return Center(child: Text(state.message),);
-        }else if(state is GetGroupSuccess) {
+        Logger().d('_GetGroupViewState rebuild with state $state');
+        if (state is GetGroupLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (state is GetGroupFailed) {
+          return Center(
+            child: Text(state.message),
+          );
+        } else if (state is GetGroupSuccess) {
           return _SalesView(state.group);
-        }else{
+        } else {
           return Container();
         }
       },
@@ -45,8 +52,7 @@ class _GetGroupView extends StatelessWidget {
   }
 }
 
-
-class _SalesView extends StatefulWidget{
+class _SalesView extends StatefulWidget {
   final List<String> group;
 
   const _SalesView(this.group);
@@ -56,21 +62,26 @@ class _SalesView extends StatefulWidget{
 }
 
 class _SalesViewState extends State<_SalesView> {
-
   late String _groupName;
   int? _status;
 
   @override
   void initState() {
-      _groupName=widget.group[0];
-      //saleAdd means this user can input sales on inactive kiosk
-      _status = context.read<LocalRepository>().currentUser()?.modules?.contains('saleAdd')==true?null:1;
-      // if(widget.group.length==1){
-        context.read<SalesBloc>().add(SalesRefresh(_groupName, _status));
-      // }
-      super.initState();
+    _groupName = widget.group[0];
+    //saleAdd means this user can input sales on inactive kiosk
+    _status = context
+                .read<LocalRepository>()
+                .currentUser()
+                ?.modules
+                ?.contains('saleAdd') ==
+            true
+        ? null
+        : 1;
+    // if(widget.group.length==1){
+    context.read<SalesBloc>().add(SalesRefresh(_groupName, _status));
+    // }
+    super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -78,8 +89,7 @@ class _SalesViewState extends State<_SalesView> {
       children: [
         if (widget.group.length > 1) ...[
           Padding(
-            padding: const EdgeInsets.only(
-                left: 16, right: 16, bottom: 16),
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             child: FormBuilderDropdown<String>(
                 name: 'group',
                 decoration: const InputDecoration(label: Text('Group')),
@@ -87,33 +97,31 @@ class _SalesViewState extends State<_SalesView> {
                 initialValue: _groupName,
                 items: widget.group
                     .map((e) =>
-                    DropdownMenuItem<String>(value: e, child: Text(e)))
+                        DropdownMenuItem<String>(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
                     _groupName = value!;
-                    context.read<SalesBloc>().add(SalesRefresh(_groupName, _status));
+                    context
+                        .read<SalesBloc>()
+                        .add(SalesRefresh(_groupName, _status));
                   });
                 }),
           )
         ],
-
-          Expanded(
-            child: _SalesRefreshableView(
-              groupName: _groupName,
-              status: _status,
-            ),
+        Expanded(
+          child: _SalesRefreshableView(
+            groupName: _groupName,
+            status: _status,
           ),
-
+        ),
       ],
     );
   }
-
 }
 
 class _SalesRefreshableView extends StatelessWidget {
-  const _SalesRefreshableView(
-      {Key? key, required this.groupName, this.status})
+  const _SalesRefreshableView({Key? key, required this.groupName, this.status})
       : super(key: key);
   final String groupName;
   final int? status;
@@ -129,13 +137,17 @@ class _SalesRefreshableView extends StatelessWidget {
       },
       child: BlocBuilder<SalesBloc, SalesState>(
         buildWhen: (previous, current) =>
-            current is SalesLoaded || current is SalesEmpty,
+            current is SalesLoaded ||
+            current is SalesEmpty ||
+            current is SalesLoading,
         builder: (context, state) {
           if (state is SalesLoaded) {
             final items = state.kiosks;
             // var languageCode2 = Localizations.localeOf(context).;
             // var formatter = DateFormat('dd MMMM yyyy hh:mm:ss',);
+
             return _SalesList(
+              // key: ObjectKey(items),
               items: items,
               groupName: groupName,
               status: status,
@@ -153,7 +165,7 @@ class _SalesRefreshableView extends StatelessWidget {
   }
 }
 
-class _SalesList extends StatelessWidget {
+class _SalesList extends StatefulWidget {
   const _SalesList({
     Key? key,
     required this.items,
@@ -166,16 +178,40 @@ class _SalesList extends StatelessWidget {
   final int? status;
 
   @override
+  State<_SalesList> createState() => _SalesListState();
+}
+
+class _SalesListState extends State<_SalesList> {
+  late List<Kiosk> _sortedItems;
+  bool _sortByDay = true;
+  bool _allKiosk = true;
+
+  @override
+  void initState() {
+    _sortedItems = widget.items.toList();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      buildWhen: (_, current) => current is AppBarClicked,
-      builder: (context, state) {
-        List<Kiosk> sortedItems = items.toList();
+    return BlocConsumer<HomeBloc, HomeState>(
+      listener: (context, state) {
         if (state is AppBarClicked) {
           if (state.idAction == actionSortByName) {
-            sortedItems.sort((a, b) => a.kioskName.compareTo(b.kioskName));
+            _sortByDay = false;
           } else if (state.idAction == actionSortByDays) {
-            sortedItems.sort((a, b) {
+            _sortByDay = true;
+          } else if (state.idAction == actionActiveKioskOnly) {
+            _allKiosk = false;
+          } else if (state.idAction == actionAllKiosk) {
+            _allKiosk = true;
+          }
+          _sortedItems = widget.items.toList();
+          if (!_allKiosk) {
+            _sortedItems.removeWhere((element) => element.status == false);
+          }
+          if (_sortByDay) {
+            _sortedItems.sort((a, b) {
               return (b.sales?.isNotEmpty == true
                       ? DateTime.now()
                           .difference(b.sales![0].date!.toLocal())
@@ -187,14 +223,34 @@ class _SalesList extends StatelessWidget {
                           .inDays
                       : 0);
             });
-          } else if (state.idAction == actionActiveKioskOnly) {
-            sortedItems.removeWhere((element) => element.status==false);
           }
+          // if (state.idAction == actionSortByName) {
+          //   _sortedItems.sort((a, b) => a.kioskName.compareTo(b.kioskName));
+          // } else if (state.idAction == actionSortByDays) {
+          //   _sortedItems.sort((a, b) {
+          //     return (b.sales?.isNotEmpty == true
+          //         ? DateTime.now()
+          //         .difference(b.sales![0].date!.toLocal())
+          //         .inDays
+          //         : 0)
+          //         .compareTo(a.sales?.isNotEmpty == true
+          //         ? DateTime.now()
+          //         .difference(a.sales![0].date!.toLocal())
+          //         .inDays
+          //         : 0);
+          //   });
+          // } else if (state.idAction == actionActiveKioskOnly) {
+          //   _sortedItems.removeWhere((element) => element.status==false);
+          // }
+          setState(() {});
         }
+      },
+      listenWhen: (_, current) => current is AppBarClicked,
+      builder: (context, state) {
         return ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
           itemBuilder: (context, index) {
-            final item = sortedItems[index];
+            final item = _sortedItems[index];
             final NumberFormat numberFormat = NumberFormat('#,###');
             final debt = item.sales?.isNotEmpty == true
                 ? item.sales![0].total - item.sales![0].cash
@@ -221,34 +277,38 @@ class _SalesList extends StatelessWidget {
               title: Row(
                 children: [
                   Text(item.kioskName),
-                  if(!item.status) ...[
-                    const Card(child: Padding(
+                  if (!item.status) ...[
+                    const Card(
+                        child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 4.0),
-                      child: Text('inactive',style: TextStyle(fontSize: 12,color: Colors.grey),),
+                      child: Text(
+                        'inactive',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
                     )),
                   ]
                 ],
               ),
-              subtitle: Text("${days > 0
-                  ? "$days day(s), "
-                  : ""} Debt: ${numberFormat.format(debt)}"),
+              subtitle: Text(
+                  "${days > 0 ? "$days day(s), " : ""} Debt: ${numberFormat.format(debt)}"),
               // subtitle: Text(formatter.format(item.createdAt)),
               trailing: InkWell(
                 onTap: () async {
-                  Navigator.of(context).push<Sales?>(
-                    SalesEdit.route(item,groupName),
-                  ).then((value) {
+                  Navigator.of(context)
+                      .push<Sales?>(
+                    SalesEdit.route(item, widget.groupName),
+                  )
+                      .then((value) {
                     if (value != null) {
                       context
                           .read<SalesBloc>()
-                          .add(SalesRefresh(groupName, status));
+                          .add(SalesRefresh(widget.groupName, widget.status));
 
                       Navigator.of(context).push<void>(
                         SalesKioskInvoice.route(kiosk: item, sales: value),
                       );
                     }
                   });
-
                 },
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),
@@ -261,7 +321,7 @@ class _SalesList extends StatelessWidget {
             );
           },
           separatorBuilder: (context, index) => const Divider(),
-          itemCount: items.length,
+          itemCount: _sortedItems.length,
         );
       },
     );

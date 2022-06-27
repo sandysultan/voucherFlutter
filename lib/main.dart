@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:form_builder_validators/localization/l10n.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -32,8 +33,7 @@ void main() async {
   if (kDebugMode && !kIsWeb) {
     // Force disable Crashlytics collection while doing every day development.
     // Temporarily toggle this to true if you want to test crash reporting in your app.
-    await FirebaseCrashlytics.instance
-        .setCrashlyticsCollectionEnabled(false);
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
   }
   // final storage = await HydratedStorage.build(
   //   storageDirectory: await getApplicationDocumentsDirectory(),
@@ -43,7 +43,70 @@ void main() async {
   //   storage: storage,
   // );
   await LocalRepository.init();
+  await createNotificationChannel();
   runApp(const MyApp());
+}
+
+createNotificationChannel() async {
+  Map<String, AndroidNotificationChannel> channelMap = {
+    'transfer': const AndroidNotificationChannel(
+      'transfer',
+      'Transfer',
+      description: 'Transfer from finance to group bank account',
+      importance: Importance.max,
+    ),
+    'sales': const AndroidNotificationChannel(
+      'sales',
+      'Sales',
+      description: 'Sales from operator billing',
+      importance: Importance.defaultImportance,
+    ),
+    'expense': const AndroidNotificationChannel(
+      'expense',
+      'Expense',
+      description: 'Expenses report created by admin',
+      importance: Importance.max,
+    ),
+    'fundRequest': const AndroidNotificationChannel(
+      'fundRequest',
+      'Fund Request',
+      description: 'Fund requested by finance',
+      importance: Importance.max,
+    ),
+  };
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+  channelMap.forEach((key, value) {
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(value);
+  });
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    RemoteNotification? notification = message.notification;
+    AndroidNotification? android = message.notification?.android;
+    // If `onMessage` is triggered with a notification, construct our own
+    // local notification to show to users using the created channel.
+    if (notification != null && android != null) {
+      FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+          FlutterLocalNotificationsPlugin();
+      flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              android.channelId ?? "",
+              channelMap['android.channelId ?? ""']?.name??"",
+              channelDescription: channelMap['android.channelId ?? ""']?.description??"",
+              icon: android.smallIcon,
+              // other properties...
+            ),
+          ));
+    }
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -82,11 +145,9 @@ class MyApp extends StatelessWidget {
             ),
             builder: EasyLoading.init(),
             home: FirebaseAuth.instance.currentUser != null
-                ? HomePage()
-                : const LoginPage()
-        ),
+                ? const HomePage()
+                : const LoginPage()),
       ),
     );
   }
 }
-

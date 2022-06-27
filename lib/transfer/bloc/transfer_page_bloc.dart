@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
+import 'package:voucher/constant/app_constant.dart';
 
 part 'transfer_page_event.dart';
 part 'transfer_page_state.dart';
@@ -103,7 +104,7 @@ class TransferPageBloc extends Bloc<TransferPageEvent, TransferPageState> {
       emit(const GetGroupFailed('Authentication Failed'));
     }else {
       UserRepository? userRepository = UserRepository(HttpClient.getClient(token: token));
-      await userRepository.getGroup('transfer')
+      await userRepository.getGroup(ModuleConstant.transfer)
           .then((value) {
         if (value?.status == 1) {
           Logger().d(value!.groups);

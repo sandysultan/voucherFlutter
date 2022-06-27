@@ -11,6 +11,9 @@ abstract class UserRepository{
   @GET('/user/{uid}/roles_and_groups')
   Future<UserRolesResponse?> rolesAndGroups(@Path('uid') String uid);
 
+  @GET('/user')
+  Future<UserResponse?> getUsers({@Query('roles') List<String>? roles});
+
   @GET('/user/{uid}/modules')
   Future<UserModuleResponse?> getUserModules(@Path('uid') String uid);
 

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
+import 'package:voucher/constant/app_constant.dart';
 
 part 'sales_report_event.dart';
 
@@ -73,7 +74,7 @@ class SalesReportBloc extends Bloc<SalesReportEvent, SalesReportState> {
     } else {
       UserRepository userRepository =
           UserRepository(HttpClient.getClient(token: token));
-      await userRepository.getGroup('salesReport').then((value) {
+      await userRepository.getGroup(ModuleConstant.salesReport).then((value) {
         if (value?.status == 1) {
           Logger().d(value!.groups);
           emit(GetGroupSuccess(value.groups));

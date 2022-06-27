@@ -6,7 +6,6 @@ import 'package:logger/logger.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:repository/repository.dart';
 import 'package:voucher/expense/expense.dart';
-import 'package:voucher/expense/view/expense_edit_page.dart';
 import 'package:voucher/home/home.dart';
 
 var _logger = Logger();
@@ -17,7 +16,7 @@ class ExpensePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ExpenseBloc()..add(const GetGroups()),
+      create: (context) => ExpenseBloc()..add(GetGroups()),
       child: const _GetGroupView(),
     );
   }
@@ -86,14 +85,14 @@ class _ExpenseViewState extends State<_ExpenseView> {
         if (state is AppBarClicked) {
           if (state.idAction == actionAddExpense) {
             await Navigator.of(context)
-                .push<bool?>(
+                .push<Expense?>(
               ExpenseEditPage.route(
                   groups: widget.groups,
                   groupName: _groupName,
                   date: _dateTime),
             )
                 .then((result) {
-              if (result == true) {
+              if (result !=null) {
                 context.read<ExpenseBloc>().add(ExpenseRefresh(
                     groupName: _groupName,
                     year: _dateTime.year,
@@ -127,13 +126,11 @@ class _ExpenseViewState extends State<_ExpenseView> {
                                 value: e, child: Text(e)))
                             .toList(),
                         onChanged: (value) {
-                          // setState(() {
                           _groupName = value!;
                           context.read<ExpenseBloc>().add(ExpenseRefresh(
                               groupName: _groupName,
                               year: _dateTime.year,
                               month: _dateTime.month));
-                          // });
                         }),
                   )
                 ],
@@ -319,9 +316,18 @@ class _ExpenseList extends StatelessWidget {
       itemBuilder: (context, index) {
         Expense item = items[index];
         return ListTile(
+          onTap: (){
+            Navigator.of(context)
+                .push<Expense?>(
+              ExpenseEditPage.route(
+                  groups: [item.groupName],
+                  groupName: item.groupName,
+                  date: item.date,
+              expense:item),
+            );
+          },
           title: Text(
               '${dateFormat.format(item.date)} Rp. ${numberFormat.format(item.total)}'),
-
           subtitle: Text(item.description),
         );
       },

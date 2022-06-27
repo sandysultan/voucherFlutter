@@ -6,12 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:http_client/http_client.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voucher/constant/app_constant.dart';
 import 'package:voucher/expense/expense.dart';
+import 'package:voucher/fund_request/fund_request.dart';
 import 'package:voucher/login/login.dart';
 import 'package:voucher/notification/notification.dart';
 import 'package:voucher/sales/sales.dart';
@@ -29,6 +32,7 @@ const int actionSortByDays = 2;
 const int actionAddExpense = 3;
 const int actionAllKiosk = 4;
 const int actionActiveKioskOnly = 5;
+const int actionAddFundRequest = 6;
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -77,14 +81,11 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     logger.d('uid: ${FirebaseAuth.instance.currentUser!.uid}');
-
+    var localUser = context.read<LocalRepository>().currentUser();
+    Logger().d("is dev : ${localUser?.dev}");
+    HttpClient.setDev(localUser?.dev??false);
     setupToken();
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        EasyLoading.showInfo(message.notification?.body??"");
-        // print('Message also contained a notification: ${message.notification}');
-      }
-    });
+
     context
         .read<HomeBloc>()
         .add(LoadModules(FirebaseAuth.instance.currentUser!.uid));
@@ -127,8 +128,8 @@ class _HomeViewState extends State<HomeView> {
 
   Future<void> logout(BuildContext context) async {
     context.read<HomeBloc>().add(const UpdateFCM(null));
+    context.read<LocalRepository>().clear();
     FirebaseAuth.instance.signOut().then((value) {
-      context.read<LocalRepository>().clear();
       Navigator.of(context).pushAndRemoveUntil<void>(
         LoginPage.route(),
         (route) => false,
@@ -155,9 +156,18 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   final logger = Logger();
 
   Widget? _activePage;
+  List<String>? _modules;
+
+  @override
+  void initState() {
+    _modules = context.read<LocalRepository>().currentUser()?.modules;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text(getTitle(_module)),
@@ -203,6 +213,9 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       case ModuleConstant.expense:
         _activePage = const ExpensePage();
         break;
+      case ModuleConstant.fundRequest:
+        _activePage = const FundRequestPage();
+        break;
       default:
         _activePage = const NotificationPage();
     }
@@ -211,6 +224,16 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
   List<Widget> getActions(String? module) {
     switch (module) {
+      case ModuleConstant.fundRequest:
+        return [
+          if(_modules?.contains(ModuleConstant.fundRequestAdd)==true) ...[
+            IconButton(onPressed: (){
+              context.read<HomeBloc>().add(const AppbarAction(actionAddFundRequest));
+              context.read<HomeBloc>().add(const AppbarAction(actionNothing));
+
+            }, icon: const Icon(Icons.add))
+          ]
+        ];
       case ModuleConstant.expense:
         return [
           IconButton(onPressed: (){
@@ -274,6 +297,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return 'Transfer Report';
       case ModuleConstant.expense:
         return 'Expenses';
+      case ModuleConstant.fundRequest:
+        return 'Fund Request';
     }
     return 'iVoucher';
   }
@@ -425,6 +450,12 @@ class DrawerListView extends StatelessWidget {
                     return Container();
                   }
                 }),
+            if(HttpClient.debugServer) ...[
+              const Text(
+                "Connected to development server",
+                style: TextStyle(color: Colors.red),
+              ),
+            ]
           ],
         ),
       )
@@ -486,6 +517,14 @@ class DrawerListView extends StatelessWidget {
         },
       ));
     }
+    if (modules.contains(ModuleConstant.fundRequest)) {
+      list.add(ListTile(
+        title: const Text('Fund Request'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.fundRequest);
+        },
+      ));
+    }
     if (modules.contains(ModuleConstant.expense)) {
       list.add(ListTile(
         title: const Text('Expenses'),
@@ -494,7 +533,6 @@ class DrawerListView extends StatelessWidget {
         },
       ));
     }
-
     if (modules.contains(ModuleConstant.transfer)) {
       list.add(ListTile(
         title: const Text('Transfer'),

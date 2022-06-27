@@ -295,6 +295,11 @@ class _SalesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     NumberFormat numberFormat = NumberFormat('#,###');
+    // int max=0;
+    // totalCashMap.forEach((key, value) {
+    //   if(max<value)max=value;
+    // });
+    // var average = totalCash/items.length;
     return Column(
       children: [
         Expanded(
@@ -309,8 +314,35 @@ class _SalesList extends StatelessWidget {
                   );
                 },
                 title: Text(item.kioskName),
-                subtitle: Text('${item.sales?.length ?? 0} bills'),
-                trailing: Text(numberFormat.format(totalCashMap[item])),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${item.sales?.length ?? 0} bills'),
+                    // SizedBox(
+                    //     width: double.infinity,
+                    //     height: 2,
+                    //     child: Container(
+                    //       color: Colors.yellow,
+                    //       child: Stack(
+                    //         children: [
+                    //           FractionallySizedBox(
+                    //             widthFactor: totalCashMap[item]!/max,
+                    //             heightFactor: 1,
+                    //             child: Container(height: 2,color: Colors.green,),
+                    //           ),
+                    //           Align(alignment: Alignment(average/totalCash, 0),
+                    //               child: Container(color: Colors.orange,height: 2,width: 2,))
+                    //         ],
+                    //       ),
+                    //     ))
+                  ],
+                ),
+                trailing: SizedBox(
+                    width: 70,
+                    child: Text(
+                      numberFormat.format(totalCashMap[item]),
+                      textAlign: TextAlign.end,
+                    )),
               );
             },
             separatorBuilder: (context, index) => const Divider(),

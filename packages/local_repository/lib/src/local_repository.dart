@@ -48,6 +48,16 @@ class LocalRepository{
     usersBox.clear();
   }
 
+  void setDev(bool dev) {
+    final usersBox = Hive.box<LocalUser>(boxName);
+    LocalUser user;
+    if (usersBox.length <= 0) {
+      usersBox.add(LocalUser());
+    }
+    user = usersBox.getAt(0)!;
+    user.dev = dev;
+  }
+
 
 
 }

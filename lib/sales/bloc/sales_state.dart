@@ -29,6 +29,9 @@ class SalesListLoaded extends SalesState {
   List<Object> get props => [sales];
 }
 
+class SalesLoading extends SalesState {
+}
+
 class SalesEmpty extends SalesState {
 }
 

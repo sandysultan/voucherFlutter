@@ -18,4 +18,9 @@ class ModuleConstant{
   static const expense='expense';
   static const expenseAdd='expenseAdd';
   static const expenseDelete='expenseDelete';
+  static const fundRequest='fundRequest';
+  static const fundRequestAdd='fundRequestAdd';
+  static const fundRequestPay='fundRequestPay';
+  static const fundRequestDelete='fundRequestDelete';
+  static const fundRequestUser='fundRequestUser';
 }

@@ -6,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:http_client/http_client.dart';
+import 'package:local_repository/local_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voucher/home/home.dart';
 import 'package:voucher/login/login.dart';
@@ -23,8 +24,6 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var formKey = GlobalKey<FormBuilderState>();
-
-
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -148,8 +147,10 @@ class _LoginView extends StatelessWidget {
                       if (_formKey.currentState?.saveAndValidate() ==
                           true) {
                         if(_formKey.currentState?.value['email']=='for_test@purpose.only'){
+                          context.read<LocalRepository>().setDev(true);
                           HttpClient.setDev(true);
                         }else{
+                          context.read<LocalRepository>().setDev(false);
                           HttpClient.setDev(false);
                         }
                         context
