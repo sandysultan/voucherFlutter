@@ -1,15 +1,13 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:http_client/http_client.dart';
+import 'package:iVoucher/widget/image_preview.dart';
 import 'package:intl/intl.dart';
-import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
-import 'package:voucher/constant/app_constant.dart';
-import 'package:voucher/expense/expense.dart';
-import 'package:voucher/fund_request/fund_request.dart';
+import 'package:iVoucher/expense/expense.dart';
+import 'package:iVoucher/fund_request/fund_request.dart';
 
 class FundRequestDetailPage extends StatelessWidget {
   const FundRequestDetailPage(
@@ -50,6 +48,12 @@ class FundRequestDetailPage extends StatelessWidget {
             child: Column(
               children: [
                 FormBuilderTextField(
+                  name: 'id',
+                  initialValue: fundRequest.id.toString(),
+                  readOnly: true,
+                  decoration: const InputDecoration(label: Text('Fund Request ID')),
+                ),
+                FormBuilderTextField(
                   name: 'date',
                   initialValue: dateFormat.format(fundRequest.createdAt!),
                   readOnly: true,
@@ -69,10 +73,33 @@ class FundRequestDetailPage extends StatelessWidget {
                   decoration: const InputDecoration(label: Text('Expense')),
                 ),
                 FormBuilderTextField(
+                  name: 'description',
+                  initialValue: fundRequest.description,
+                  readOnly: true,
+                  decoration: const InputDecoration(label: Text('Description')),
+                ),
+                FormBuilderTextField(
                   name: 'total',
                   initialValue: "Rp. ${numberFormat.format(fundRequest.total)}",
                   readOnly: true,
                   decoration: const InputDecoration(label: Text('Total')),
+                ),
+                InkWell(
+
+                  onTap: () {
+                    Navigator.of(context).push<void>(
+                      ImagePreview.route(
+                          local: null,
+                          network:
+                          '${HttpClient.server}fund_request/${fundRequest.id}/receipt'),
+                    );
+                  },
+                  child: Image.network(
+                    '${HttpClient.server}fund_request/${fundRequest.id}/receipt',
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 BlocProvider(
                   create: (context) => FundRequestBloc()..add(GetModulesPay()),
@@ -174,6 +201,7 @@ class _ListViewState extends State<_ListView> {
                                   date: DateTime.now()),
                             );
                           },
+                      style: ElevatedButton.styleFrom(primary: Colors.green),
                           child: const Text('Paid')))),
               separatorBuilder: (context, index) => const Divider(),
               itemCount: widget.fundRequest.fundRequestDetails.length);

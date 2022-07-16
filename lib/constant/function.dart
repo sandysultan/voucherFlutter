@@ -58,7 +58,6 @@ Future<void> _cropImage(BuildContext context, XFile image,
     aspectRatioPresets: [
       CropAspectRatioPreset.square,
       CropAspectRatioPreset.ratio3x2,
-      CropAspectRatioPreset.original,
       CropAspectRatioPreset.ratio4x3,
       CropAspectRatioPreset.ratio16x9
     ],

@@ -33,3 +33,6 @@ export 'fund_request.dart';
 export 'fund_request_detail.dart';
 export 'fund_request_response.dart';
 export 'add_fund_request_response.dart';
+export 'closing_status_response.dart';
+export 'booster.dart';
+export 'capital.dart';

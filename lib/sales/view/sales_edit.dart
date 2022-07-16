@@ -24,10 +24,10 @@ import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
 import 'package:repository/repository.dart' as repo;
-import 'package:voucher/constant/app_constant.dart';
-import 'package:voucher/sales/cubit/sales_edit_save_cubit.dart';
-import 'package:voucher/sales/cubit/sales_edit_power_cubit.dart';
-import 'package:voucher/sales/sales.dart';
+import 'package:iVoucher/constant/app_constant.dart';
+import 'package:iVoucher/sales/cubit/sales_edit_save_cubit.dart';
+import 'package:iVoucher/sales/cubit/sales_edit_power_cubit.dart';
+import 'package:iVoucher/sales/sales.dart';
 
 class SalesEdit extends StatelessWidget {
   const SalesEdit(this.item, this.groupName, {Key? key}) : super(key: key);
@@ -207,8 +207,7 @@ class _SalesViewState extends State<_SalesView> {
                             _voucherSold = 0;
                             for (VoucherItem voucher in value?.vouchers ?? []) {
                               _voucherSold += voucher.stock -
-                                  voucher.balance -
-                                  voucher.damage;
+                                  voucher.balance;
                             }
                             _kioskProfit =
                                 _voucherSold * widget.item.kioskShare.toInt();
@@ -259,7 +258,7 @@ class _SalesViewState extends State<_SalesView> {
                       _voucherSold = 0;
                       for (var voucher in state.vouchers) {
                         var stock = mapLastDetails.containsKey(voucher.id)
-                            ? mapLastDetails[voucher.id]!.balance +
+                            ? mapLastDetails[voucher.id]!.balance -  mapLastDetails[voucher.id]!.damage +
                                 mapLastDetails[voucher.id]!.restock
                             : 0;
                         _voucherSold += stock;
@@ -805,7 +804,6 @@ class _SalesViewState extends State<_SalesView> {
       aspectRatioPresets: [
         CropAspectRatioPreset.square,
         CropAspectRatioPreset.ratio3x2,
-        CropAspectRatioPreset.original,
         CropAspectRatioPreset.ratio4x3,
         CropAspectRatioPreset.ratio16x9
       ],

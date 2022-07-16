@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:repository/repository.dart';
-import 'package:voucher/expense/expense.dart';
-import 'package:voucher/home/home.dart';
+import 'package:iVoucher/expense/expense.dart';
+import 'package:iVoucher/home/home.dart';
 
 var _logger = Logger();
 
@@ -92,7 +92,7 @@ class _ExpenseViewState extends State<_ExpenseView> {
                   date: _dateTime),
             )
                 .then((result) {
-              if (result !=null) {
+              if (result != null) {
                 context.read<ExpenseBloc>().add(ExpenseRefresh(
                     groupName: _groupName,
                     year: _dateTime.year,
@@ -107,9 +107,6 @@ class _ExpenseViewState extends State<_ExpenseView> {
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             child: Row(
-              // mainAxisAlignment: MainAxisAlignment.center,
-              // crossAxisAlignment: CrossAxisAlignment.center,
-              // textBaseline: TextBaseline.ideographic,
               children: [
                 if (widget.groups.length > 1) ...[
                   Flexible(
@@ -145,7 +142,7 @@ class _ExpenseViewState extends State<_ExpenseView> {
                           style: Theme.of(context)
                               .textTheme
                               .labelMedium
-                              ?.copyWith(color: Colors.black54),
+                              ?.copyWith(color: Theme.of(context).hintColor),
                         ),
                       ),
                       Padding(
@@ -283,8 +280,86 @@ class _ExpenseRefreshableView extends StatelessWidget {
             // final items = state.kiosks;
             // var languageCode2 = Localizations.localeOf(context).;
             // var formatter = DateFormat('dd MMMM yyyy hh:mm:ss',);
-            return _ExpenseList(
-              items: state.expenses,
+
+            NumberFormat numberFormat = NumberFormat('#,###');
+            int totalAsset = 0;
+            int totalMaintenance = 0;
+            for (var element in state.expenses) {
+              if(element.expenseType?.asset==true) {
+                totalAsset += element.total;
+              }else{
+                totalMaintenance+= element.total;
+              }
+            }
+            return Column(
+              children: [
+                Expanded(
+                  child: _ExpenseList(
+                    items: state.expenses,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: 230,
+                        child: Table(
+                          columnWidths: const {
+                            0: FixedColumnWidth(130),
+                            1: FixedColumnWidth(20),
+                          },
+                          children: [
+                            TableRow(children: [
+                              const TableCell(
+                                child: Text('Total Asset'),
+                              ),
+                              const TableCell(
+                                child: Text(' : '),
+                              ),
+                              TableCell(
+                                child: Text(
+                                  numberFormat.format(totalAsset),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ]),
+                            TableRow(children: [
+                              const TableCell(
+                                child: Text('Total Maintenance'),
+                              ),
+                              const TableCell(
+                                child: Text(' : '),
+                              ),
+                              TableCell(
+                                child: Text(
+                                  numberFormat.format(totalMaintenance),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ]),
+                            TableRow(children: [
+                              const TableCell(
+                                child: Text('Total Expenses'),
+                              ),
+                              const TableCell(
+                                child: Text(' : '),
+                              ),
+                              TableCell(
+                                child: Text(
+                                  numberFormat.format(totalAsset+totalMaintenance),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ]),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             );
           } else if (state is ExpenseEmpty) {
             return Center(child: Text(state.message));
@@ -316,19 +391,26 @@ class _ExpenseList extends StatelessWidget {
       itemBuilder: (context, index) {
         Expense item = items[index];
         return ListTile(
-          onTap: (){
-            Navigator.of(context)
-                .push<Expense?>(
+          onTap: () {
+            Navigator.of(context).push<Expense?>(
               ExpenseEditPage.route(
                   groups: [item.groupName],
                   groupName: item.groupName,
                   date: item.date,
-              expense:item),
+                  expense: item),
             );
           },
           title: Text(
               '${dateFormat.format(item.date)} Rp. ${numberFormat.format(item.total)}'),
-          subtitle: Text(item.description),
+          subtitle:
+              Text('${item.expenseType!.expenseTypeName}\n${item.description}'),
+          trailing: item.expenseType?.asset == true
+              ? const Text(
+                  'Asset',
+                  style: TextStyle(fontSize: 12, color: Colors.green),
+                )
+              : null,
+          isThreeLine: true,
         );
       },
       separatorBuilder: (context, index) => const Divider(),

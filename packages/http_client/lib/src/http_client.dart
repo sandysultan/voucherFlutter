@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 class HttpClient{
   static const String server=
      kDebugMode?'http://192.168.0.155:5000/api/':'https://ivoucher.my.id/api/';
+  // static const String server='https://ivoucher.my.id/api/';
   static const String serverDev=
      'https://ivoucher.my.id/devapi/';
 

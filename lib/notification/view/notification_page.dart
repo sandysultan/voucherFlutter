@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:voucher/notification/notification.dart';
+import 'package:iVoucher/notification/notification.dart';
 import 'package:repository/repository.dart' as repository;
 
 class NotificationPage extends StatelessWidget {

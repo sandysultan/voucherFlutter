@@ -18,8 +18,8 @@ import 'package:local_repository/local_repository.dart';
 import 'package:repository/repository.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:voucher/sales/bloc/sales_kiosk_invoice_bloc.dart';
-import 'package:voucher/widget/image_preview.dart';
+import 'package:iVoucher/sales/bloc/sales_kiosk_invoice_bloc.dart';
+import 'package:iVoucher/widget/image_preview.dart';
 
 class SalesKioskInvoice extends StatelessWidget {
   const SalesKioskInvoice(
@@ -79,7 +79,7 @@ class SalesKioskView extends StatelessWidget {
     var salesDetail = [
       TableRow(
           decoration:
-              BoxDecoration(border: Border.all(), color: Colors.blueAccent),
+              BoxDecoration(border: Border.all(), color: Theme.of(context).primaryColorDark),
           children: const [
             TableCell(
                 child: Padding(
@@ -123,11 +123,11 @@ class SalesKioskView extends StatelessWidget {
     for (int i = 0; i < (sales.salesDetails?.length ?? 0); i++) {
       SalesDetail detail = sales.salesDetails![i];
       subtotal +=
-          (detail.price * (detail.stock - detail.balance - detail.damage));
+          (detail.price * (detail.stock - detail.balance));
       salesDetail.add(TableRow(
           decoration: BoxDecoration(
               border: const Border.symmetric(vertical: BorderSide()),
-              color: i % 2 == 0 ? Colors.blue[50] : null),
+              color: i % 2 == 0 ? Theme.of(context).secondaryHeaderColor : null),
           children: [
             TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
@@ -154,7 +154,7 @@ class SalesKioskView extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    '${numberFormat.format(detail.price)} x ( ${detail.stock} - ${detail.balance} - ${detail.damage} = ${detail.stock - detail.balance - detail.damage} )',
+                    '${numberFormat.format(detail.price)} x ( ${detail.stock} - ${detail.balance} = ${detail.stock - detail.balance} )',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 12),
                   ),
@@ -165,7 +165,7 @@ class SalesKioskView extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     numberFormat.format(detail.price *
-                        (detail.stock - detail.balance - detail.damage)),
+                        (detail.stock - detail.balance)),
                     textAlign: TextAlign.right,
                     style: const TextStyle(fontSize: 12),
                   ),
@@ -174,10 +174,10 @@ class SalesKioskView extends StatelessWidget {
     }
     salesDetail.addAll([
       TableRow(
-          decoration: const BoxDecoration(
-              border: Border(
+          decoration:  BoxDecoration(
+              border: const Border(
                   top: BorderSide(), left: BorderSide(), right: BorderSide()),
-              color: Colors.blueAccent),
+              color: Theme.of(context).primaryColorDark),
           children: [
             Container(),
             Container(),
@@ -199,9 +199,9 @@ class SalesKioskView extends StatelessWidget {
             ))
           ]),
       TableRow(
-          decoration: const BoxDecoration(
-              border: Border(left: BorderSide(), right: BorderSide()),
-              color: Colors.blueAccent),
+          decoration: BoxDecoration(
+              border: const Border(left: BorderSide(), right: BorderSide()),
+              color: Theme.of(context).primaryColorDark),
           children: [
             Container(),
             Container(),
@@ -225,9 +225,9 @@ class SalesKioskView extends StatelessWidget {
     ]);
     if (sales.debt > 0) {
       salesDetail.add(TableRow(
-          decoration: const BoxDecoration(
-              border: Border(left: BorderSide(), right: BorderSide()),
-              color: Colors.blueAccent),
+          decoration:  BoxDecoration(
+              border: const Border(left: BorderSide(), right: BorderSide()),
+              color: Theme.of(context).primaryColorDark),
           children: [
             Container(),
             Container(),
@@ -251,9 +251,9 @@ class SalesKioskView extends StatelessWidget {
     }
     if (sales.powerCost > 0) {
       salesDetail.add(TableRow(
-          decoration: const BoxDecoration(
-              border: Border(left: BorderSide(), right: BorderSide()),
-              color: Colors.blueAccent),
+          decoration: BoxDecoration(
+              border: const Border(left: BorderSide(), right: BorderSide()),
+              color: Theme.of(context).primaryColorDark),
           children: [
             Container(),
             Container(),
@@ -284,7 +284,7 @@ class SalesKioskView extends StatelessWidget {
                     ? BorderSide.none
                     : const BorderSide(),
                 top: const BorderSide(color: Colors.white)),
-            color: Colors.blueAccent),
+            color: Theme.of(context).primaryColorDark),
         children: [
           Container(),
           Container(),
@@ -310,12 +310,12 @@ class SalesKioskView extends StatelessWidget {
     if (sales.cash != sales.total) {
       salesDetail.addAll([
         TableRow(
-            decoration: const BoxDecoration(
-                border: Border(
+            decoration:  BoxDecoration(
+                border: const Border(
                   left: BorderSide(),
                   right: BorderSide(),
                 ),
-                color: Colors.blueAccent),
+                color: Theme.of(context).primaryColorDark),
             children: [
               Container(),
               Container(),
@@ -339,13 +339,13 @@ class SalesKioskView extends StatelessWidget {
               )),
             ]),
         TableRow(
-            decoration: const BoxDecoration(
-                border: Border(
+            decoration:  BoxDecoration(
+                border: const Border(
                     left: BorderSide(),
                     right: BorderSide(),
                     bottom: BorderSide(),
                     top: BorderSide(color: Colors.white)),
-                color: Colors.blueAccent),
+                color: Theme.of(context).primaryColorDark),
             children: [
               Container(),
               Container(),

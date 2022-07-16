@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
-import 'package:voucher/sales/sales.dart';
+import 'package:iVoucher/sales/sales.dart';
 
 import '../../home/home.dart';
 

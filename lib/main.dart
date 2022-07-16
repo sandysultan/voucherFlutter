@@ -9,9 +9,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:form_builder_validators/localization/l10n.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:iVoucher/home/home.dart';
+import 'package:iVoucher/login/login.dart';
 import 'package:local_repository/local_repository.dart';
-import 'package:voucher/home/home.dart';
-import 'package:voucher/login/login.dart';
 
 import 'firebase_options.dart';
 
@@ -73,6 +73,12 @@ createNotificationChannel() async {
       description: 'Fund requested by finance',
       importance: Importance.max,
     ),
+    'closing': const AndroidNotificationChannel(
+      'closing',
+      'Closing Month',
+      description: 'Closing month by admin',
+      importance: Importance.max,
+    ),
   };
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -131,6 +137,7 @@ class MyApp extends StatelessWidget {
             ],
             debugShowCheckedModeBanner: false,
             title: 'I Voucher',
+            darkTheme: ThemeData(brightness: Brightness.dark),
             theme: ThemeData(
               // This is the theme of your application.
               //

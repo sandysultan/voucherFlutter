@@ -23,4 +23,6 @@ class ModuleConstant{
   static const fundRequestPay='fundRequestPay';
   static const fundRequestDelete='fundRequestDelete';
   static const fundRequestUser='fundRequestUser';
+  static const closing='closing';
+  static const closingReport='closingReport';
 }

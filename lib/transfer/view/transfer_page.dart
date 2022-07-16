@@ -9,9 +9,9 @@ import 'package:intl/intl.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
-import 'package:voucher/constant/app_constant.dart';
-import 'package:voucher/transfer/transfer.dart';
-import 'package:voucher/sales/sales.dart' as sales;
+import 'package:iVoucher/constant/app_constant.dart';
+import 'package:iVoucher/transfer/transfer.dart';
+import 'package:iVoucher/sales/sales.dart' as sales;
 
 var _logger = Logger();
 
@@ -414,7 +414,6 @@ class _SalesListState extends State<_SalesList> {
       aspectRatioPresets: [
         CropAspectRatioPreset.square,
         CropAspectRatioPreset.ratio3x2,
-        CropAspectRatioPreset.original,
         CropAspectRatioPreset.ratio4x3,
         CropAspectRatioPreset.ratio16x9
       ],
@@ -546,7 +545,7 @@ class _Header extends StatelessWidget {
       },
       child: Container(
         height: 50,
-        color: Colors.lightBlue,
+        color: Theme.of(context).primaryColorDark,
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         alignment: Alignment.centerLeft,
         child: Row(

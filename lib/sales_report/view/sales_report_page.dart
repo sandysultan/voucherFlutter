@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:repository/repository.dart';
-import 'package:voucher/sales/sales.dart' as sales;
-import 'package:voucher/sales_report/sales_report.dart';
+import 'package:iVoucher/sales/sales.dart' as sales;
+import 'package:iVoucher/sales_report/sales_report.dart';
 
 class SalesReportPage extends StatelessWidget {
   const SalesReportPage({Key? key}) : super(key: key);
@@ -122,7 +122,7 @@ class _SalesReportViewState extends State<_SalesReportView> {
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium
-                            ?.copyWith(color: Colors.black54),
+                            ?.copyWith(color: Theme.of(context).hintColor),
                       ),
                     ),
                     Padding(
@@ -295,11 +295,6 @@ class _SalesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     NumberFormat numberFormat = NumberFormat('#,###');
-    // int max=0;
-    // totalCashMap.forEach((key, value) {
-    //   if(max<value)max=value;
-    // });
-    // var average = totalCash/items.length;
     return Column(
       children: [
         Expanded(
@@ -314,29 +309,7 @@ class _SalesList extends StatelessWidget {
                   );
                 },
                 title: Text(item.kioskName),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('${item.sales?.length ?? 0} bills'),
-                    // SizedBox(
-                    //     width: double.infinity,
-                    //     height: 2,
-                    //     child: Container(
-                    //       color: Colors.yellow,
-                    //       child: Stack(
-                    //         children: [
-                    //           FractionallySizedBox(
-                    //             widthFactor: totalCashMap[item]!/max,
-                    //             heightFactor: 1,
-                    //             child: Container(height: 2,color: Colors.green,),
-                    //           ),
-                    //           Align(alignment: Alignment(average/totalCash, 0),
-                    //               child: Container(color: Colors.orange,height: 2,width: 2,))
-                    //         ],
-                    //       ),
-                    //     ))
-                  ],
-                ),
+                subtitle: Text('${item.sales?.length ?? 0} bills, ${item.sales?.where((element) => element.cash==0).toList().length??0} failed'),
                 trailing: SizedBox(
                     width: 70,
                     child: Text(

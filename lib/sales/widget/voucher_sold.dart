@@ -127,7 +127,7 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
                   _subTotal = 0;
                   for (VoucherItem voucher in _vouchers ?? []) {
                     _subTotal += voucher.price *
-                        (voucher.stock - voucher.balance - voucher.damage);
+                        (voucher.stock - voucher.balance);
                   }
                   // logger.d('_subTotal ' + _subTotal.toString());
                   widget.onChanged(VoucherRecap(
@@ -172,12 +172,12 @@ class _VoucherTableViewState extends State<_VoucherTableView> {
                             ),
                             const Text(' x '),
                             Text(
-                              formatter.format(e.stock - e.balance - e.damage),
+                              formatter.format(e.stock - e.balance),
                               textAlign: TextAlign.right,
                             ),
                             const Text(' = '),
                             Text(
-                              formatter.format(e.price * (e.stock - e.balance - e.damage)),
+                              formatter.format(e.price * (e.stock - e.balance)),
                               textAlign: TextAlign.right,
                             ),
                           ],

@@ -9,19 +9,20 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:http_client/http_client.dart';
+import 'package:iVoucher/closing/view/closing_page.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:voucher/constant/app_constant.dart';
-import 'package:voucher/expense/expense.dart';
-import 'package:voucher/fund_request/fund_request.dart';
-import 'package:voucher/login/login.dart';
-import 'package:voucher/notification/notification.dart';
-import 'package:voucher/sales/sales.dart';
-import 'package:voucher/sales_report/sales_report.dart';
-import 'package:voucher/transfer/transfer.dart';
-import 'package:voucher/transfer_report/transfer_report.dart';
-import 'package:voucher/user/view/user_page.dart';
+import 'package:iVoucher/constant/app_constant.dart';
+import 'package:iVoucher/expense/expense.dart';
+import 'package:iVoucher/fund_request/fund_request.dart';
+import 'package:iVoucher/login/login.dart';
+import 'package:iVoucher/notification/notification.dart';
+import 'package:iVoucher/sales/sales.dart';
+import 'package:iVoucher/sales_report/sales_report.dart';
+import 'package:iVoucher/transfer/transfer.dart';
+import 'package:iVoucher/transfer_report/transfer_report.dart';
+import 'package:iVoucher/user/view/user_page.dart';
 
 import '../home.dart';
 
@@ -216,6 +217,9 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       case ModuleConstant.fundRequest:
         _activePage = const FundRequestPage();
         break;
+      case ModuleConstant.closing:
+        _activePage = const ClosingPage();
+        break;
       default:
         _activePage = const NotificationPage();
     }
@@ -299,6 +303,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return 'Expenses';
       case ModuleConstant.fundRequest:
         return 'Fund Request';
+      case ModuleConstant.closing:
+        return 'Month Closing';
     }
     return 'iVoucher';
   }
@@ -431,12 +437,12 @@ class DrawerListView extends StatelessWidget {
   List<Widget> populateMenu(BuildContext context) {
     var list = <Widget>[
       DrawerHeader(
-        decoration: const BoxDecoration(color: Colors.blue),
+        decoration: BoxDecoration(color: Theme.of(context).primaryColorDark),
         child: Column(
           children: [
             Text(
               FirebaseAuth.instance.currentUser?.email ?? "",
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).primaryTextTheme.titleLarge?.color),
             ),
             FutureBuilder<PackageInfo>(
                 future: PackageInfo.fromPlatform(),
@@ -444,7 +450,7 @@ class DrawerListView extends StatelessWidget {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return Text(
                       "Version : ${snapshot.requireData.version}",
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: Theme.of(context).primaryTextTheme.titleLarge?.color),
                     );
                   } else {
                     return Container();
@@ -546,6 +552,22 @@ class DrawerListView extends StatelessWidget {
         title: const Text('Transfer Report'),
         onTap: () async {
           onModuleChanged(ModuleConstant.transferReport);
+        },
+      ));
+    }
+    if (modules.contains(ModuleConstant.closing)) {
+      list.add(ListTile(
+        title: const Text('Closing'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.closing);
+        },
+      ));
+    }
+    if (modules.contains(ModuleConstant.closingReport)) {
+      list.add(ListTile(
+        title: const Text('Closing Report'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.closingReport);
         },
       ));
     }

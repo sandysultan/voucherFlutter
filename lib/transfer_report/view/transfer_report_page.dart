@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:http_client/http_client.dart';
+import 'package:iVoucher/transfer_report/bloc/transfer_report_bloc.dart';
+import 'package:iVoucher/widget/image_preview.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:repository/repository.dart';
-import 'package:voucher/transfer_report/transfer_report.dart';
-import 'package:voucher/widget/image_preview.dart';
 
 var _logger = Logger();
 
@@ -125,7 +125,7 @@ class _SalesReportViewState extends State<_SalesReportView> {
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium
-                            ?.copyWith(color: Colors.black54),
+                            ?.copyWith(color: Theme.of(context).hintColor),
                       ),
                     ),
                     Padding(

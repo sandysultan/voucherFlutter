@@ -7,9 +7,9 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
+import 'package:iVoucher/constant/app_constant.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
-import 'package:voucher/constant/app_constant.dart';
 
 part 'transfer_page_event.dart';
 part 'transfer_page_state.dart';

@@ -8,8 +8,8 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:http_client/http_client.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:voucher/home/home.dart';
-import 'package:voucher/login/login.dart';
+import 'package:iVoucher/home/home.dart';
+import 'package:iVoucher/login/login.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -66,7 +66,10 @@ class _LoginView extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Image.asset("assets/logo.png"),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset("assets/ivoucher.png",width: 150,),
+              ),
               FutureBuilder<PackageInfo>(
                   future: PackageInfo.fromPlatform(),
                   builder: (context, snapshot) {

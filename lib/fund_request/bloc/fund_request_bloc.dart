@@ -11,7 +11,7 @@ import 'package:http_client/http_client.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
 import 'package:repository/repository.dart' as repository;
-import 'package:voucher/constant/app_constant.dart';
+import 'package:iVoucher/constant/app_constant.dart';
 
 part 'fund_request_event.dart';
 

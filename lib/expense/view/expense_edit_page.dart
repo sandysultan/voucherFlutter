@@ -5,11 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:iVoucher/expense/expense.dart';
+import 'package:iVoucher/widget/image_preview.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:repository/repository.dart';
-import 'package:voucher/expense/expense.dart';
 import 'package:http_client/http_client.dart';
 
 class ExpenseEditPage extends StatelessWidget {
@@ -31,20 +32,20 @@ class ExpenseEditPage extends StatelessWidget {
 
   static Route<Expense?> route(
       {required String groupName,
-        required DateTime date,
-        required List<String> groups,
-        FundRequest? fundRequest,
-        FundRequestDetail? fundRequestDetail,
-        Expense? expense}) {
+      required DateTime date,
+      required List<String> groups,
+      FundRequest? fundRequest,
+      FundRequestDetail? fundRequestDetail,
+      Expense? expense}) {
     return MaterialPageRoute<Expense?>(
         builder: (_) => ExpenseEditPage(
-          groups: groups,
-          groupName: groupName,
-          date: date,
-          fundRequest: fundRequest,
-          fundRequestDetail: fundRequestDetail,
-          expense: expense,
-        ));
+              groups: groups,
+              groupName: groupName,
+              date: date,
+              fundRequest: fundRequest,
+              fundRequestDetail: fundRequestDetail,
+              expense: expense,
+            ));
   }
 
   @override
@@ -96,91 +97,103 @@ class _ExpenseEditView extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                (groups.length > 1)?
-                FormBuilderDropdown(
-                    name: 'groupName',
-                    initialValue: groupName,
-                    validator: FormBuilderValidators.required(),
+                if(expense !=null) ...[
+                  FormBuilderTextField(
+                    name: 'id',
+                    initialValue: expense!.id.toString(),
+                    readOnly: true,
                     decoration: const InputDecoration(
-                        label: Text('Group'), isDense: true),
-                    items: groups
-                        .map(
-                            (e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList())
-                    :FormBuilderTextField(
-                  name: 'groupName',
-                  initialValue: groupName,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                      label: Text('Group'), isDense: true),
-                ),
-                expense==null?
-                FormBuilderDateTimePicker(
-                  name: 'date',
-                  format: DateFormat('dd MMMM yyyy'),
-                  inputType: InputType.date,
-                  initialValue: date,
-                  validator: FormBuilderValidators.required(),
-                  decoration:
-                  const InputDecoration(label: Text('Date'), isDense: true),
-                ):FormBuilderTextField(
-                  name: 'date',
-                  initialValue: dateFormat.format(expense!.date),
-                  readOnly: true,
-                  decoration:
-                  const InputDecoration(label: Text('Date'), isDense: true),
-                ),
-                fundRequest == null && expense==null
+                        label: Text('Expense Id'), isDense: true),
+                  )
+                ],
+                (groups.length > 1)
+                    ? FormBuilderDropdown(
+                        name: 'groupName',
+                        initialValue: groupName,
+                        validator: FormBuilderValidators.required(),
+                        decoration: const InputDecoration(
+                            label: Text('Group'), isDense: true),
+                        items: groups
+                            .map((e) =>
+                                DropdownMenuItem(value: e, child: Text(e)))
+                            .toList())
+                    : FormBuilderTextField(
+                        name: 'groupName',
+                        initialValue: groupName,
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                            label: Text('Group'), isDense: true),
+                      ),
+                expense == null
+                    ? FormBuilderDateTimePicker(
+                        name: 'date',
+                        format: DateFormat('dd MMMM yyyy'),
+                        inputType: InputType.date,
+                        initialValue: date,
+                        validator: FormBuilderValidators.required(),
+                        decoration: const InputDecoration(
+                            label: Text('Date'), isDense: true),
+                      )
+                    : FormBuilderTextField(
+                        name: 'date',
+                        initialValue: dateFormat.format(expense!.date),
+                        readOnly: true,
+                        decoration: const InputDecoration(
+                            label: Text('Date'), isDense: true),
+                      ),
+                fundRequest == null && expense == null
                     ? BlocBuilder<ExpenseBloc, ExpenseState>(
-                  buildWhen: (previous, current) =>
-                  current is GetExpenseTypeLoading ||
-                      current is GetExpenseTypeSuccess ||
-                      current is GetExpenseTypeError,
-                  builder: (context, state) {
-                    if (state is GetExpenseTypeSuccess) {
-                      return FormBuilderDropdown<ExpenseType>(
+                        buildWhen: (previous, current) =>
+                            current is GetExpenseTypeLoading ||
+                            current is GetExpenseTypeSuccess ||
+                            current is GetExpenseTypeError,
+                        builder: (context, state) {
+                          if (state is GetExpenseTypeSuccess) {
+                            return FormBuilderDropdown<ExpenseType>(
+                              name: 'expenseType',
+                              items: state.expenseTypes
+                                  .map((e) => DropdownMenuItem(
+                                      value: e, child: Text(e.expenseTypeName)))
+                                  .toList(),
+                              decoration: const InputDecoration(
+                                label: Text('Expense'),
+                              ),
+                              validator: FormBuilderValidators.required(),
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        },
+                      )
+                    : FormBuilderTextField(
                         name: 'expenseType',
-                        items: state.expenseTypes
-                            .map((e) => DropdownMenuItem(
-                            value: e, child: Text(e.expenseTypeName)))
-                            .toList(),
+                        readOnly: true,
+                        initialValue: fundRequest != null
+                            ? fundRequest!.expenseType!.expenseTypeName
+                            : expense!.expenseType!.expenseTypeName,
                         decoration: const InputDecoration(
                           label: Text('Expense'),
                         ),
                         validator: FormBuilderValidators.required(),
-                      );
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  },
-                )
-                    : FormBuilderTextField(
-                  name: 'expenseType',
-                  readOnly: true,
-                  initialValue: fundRequest!=null?fundRequest!.expenseType!.expenseTypeName:expense!.expenseType!.expenseTypeName,
-                  decoration: const InputDecoration(
-                    label: Text('Expense'),
-                  ),
-                  validator: FormBuilderValidators.required(),
-                ),
+                      ),
                 FormBuilderTextField(
                   name: 'description',
-                  readOnly: fundRequest != null || expense!=null,
+                  readOnly: fundRequest != null || expense != null,
                   initialValue: fundRequest == null
-                      ? (expense==null?null:expense!.description)
+                      ? (expense == null ? null : expense!.description)
                       : '${(fundRequestDetail!.percentage! * 100).toStringAsFixed(2)}% x ${numberFormat.format(fundRequest!.total)} = Rp. ${numberFormat.format(fundRequestDetail!.percentage! * fundRequest!.total)}',
                   decoration: const InputDecoration(label: Text('Description')),
                   validator: FormBuilderValidators.required(),
                 ),
                 FormBuilderTextField(
                   name: 'total',
-                  readOnly: fundRequest != null || expense!=null,
+                  readOnly: fundRequest != null || expense != null,
                   initialValue: fundRequest == null
-                      ? (expense==null?null:expense!.total.toString())
+                      ? (expense == null ? null : expense!.total.toString())
                       : (fundRequestDetail!.percentage! * fundRequest!.total)
-                      .toStringAsFixed(0),
+                          .toStringAsFixed(0),
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(label: Text('Total')),
                   validator: FormBuilderValidators.required(),
@@ -189,23 +202,34 @@ class _ExpenseEditView extends StatelessWidget {
                   FormBuilderTextField(
                     name: 'requestedBy',
                     decoration:
-                    const InputDecoration(label: Text('Requested By')),
+                        const InputDecoration(label: Text('Requested By')),
                     initialValue: fundRequest!.requestedByUser!.name,
                   )
                 ],
-                if(expense!=null) ...[
-                  const SizedBox(height: 16,),
-                  Image.network(
-                    '${HttpClient.server}expense/${expense!.id}/receipt',
-                    width: 150,
-                    height: 150,
-                    fit: BoxFit.contain,
+                if (expense != null) ...[
+                  const SizedBox(
+                    height: 16,
                   ),
+                  InkWell(
+                      onTap: () {
+                        Navigator.of(context).push<void>(
+                          ImagePreview.route(
+                              local: null,
+                              network:
+                                  '${HttpClient.server}expense/${expense!.id}/receipt'),
+                        );
+                      },
+                      child: Image.network(
+                        '${HttpClient.server}expense/${expense!.id}/receipt',
+                        width: 150,
+                        height: 150,
+                        fit: BoxFit.contain,
+                      )),
                 ],
-                if(expense==null) ...[
+                if (expense == null) ...[
                   BlocListener<ExpenseBloc, ExpenseState>(
                     listenWhen: (previous, current) =>
-                    current is AddExpenseLoading ||
+                        current is AddExpenseLoading ||
                         current is AddExpenseSuccess ||
                         current is AddExpenseError,
                     listener: (context, state) {
@@ -224,62 +248,65 @@ class _ExpenseEditView extends StatelessWidget {
                             showDialog(
                                 context: context,
                                 builder: (_) => AlertDialog(
-                                  title: const Text("Image Source"),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ListTile(
-                                        title: const Text('Camera'),
-                                        leading: const Icon(Icons.camera),
-                                        onTap: () {
-                                          final ImagePicker picker =
-                                          ImagePicker();
-                                          picker
-                                              .pickImage(
-                                              source: ImageSource.camera)
-                                              .then((photo) {
-                                            if (photo != null) {
-                                              cropImage(
-                                                  context, formKey, photo)
-                                                  .then((value) =>
-                                                  Navigator.of(context)
-                                                      .pop());
-                                            } else {
-                                              Navigator.of(context).pop();
-                                            }
-                                          });
-                                        },
+                                      title: const Text("Image Source"),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            title: const Text('Camera'),
+                                            leading: const Icon(Icons.camera),
+                                            onTap: () {
+                                              final ImagePicker picker =
+                                                  ImagePicker();
+                                              picker
+                                                  .pickImage(
+                                                      source:
+                                                          ImageSource.camera)
+                                                  .then((photo) {
+                                                if (photo != null) {
+                                                  cropImage(context, formKey,
+                                                          photo)
+                                                      .then((value) =>
+                                                          Navigator.of(context)
+                                                              .pop());
+                                                } else {
+                                                  Navigator.of(context).pop();
+                                                }
+                                              });
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('Gallery'),
+                                            leading:
+                                                const Icon(Icons.image_search),
+                                            onTap: () {
+                                              final ImagePicker picker =
+                                                  ImagePicker();
+                                              picker
+                                                  .pickImage(
+                                                      source:
+                                                          ImageSource.gallery)
+                                                  .then((image) {
+                                                if (image != null) {
+                                                  cropImage(context, formKey,
+                                                          image)
+                                                      .then((value) =>
+                                                          Navigator.of(context)
+                                                              .pop());
+                                                } else {
+                                                  Navigator.of(context).pop();
+                                                }
+                                              });
+                                            },
+                                          ),
+                                        ],
                                       ),
-                                      ListTile(
-                                        title: const Text('Gallery'),
-                                        leading:
-                                        const Icon(Icons.image_search),
-                                        onTap: () {
-                                          final ImagePicker picker =
-                                          ImagePicker();
-                                          picker
-                                              .pickImage(
-                                              source: ImageSource.gallery)
-                                              .then((image) {
-                                            if (image != null) {
-                                              cropImage(
-                                                  context, formKey, image)
-                                                  .then((value) =>
-                                                  Navigator.of(context)
-                                                      .pop());
-                                            } else {
-                                              Navigator.of(context).pop();
-                                            }
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ));
+                                    ));
                           }
                         },
                         child: const Text('Continue')),
-                  ),],
+                  ),
+                ],
               ],
             ),
           ),
@@ -295,7 +322,6 @@ class _ExpenseEditView extends StatelessWidget {
       aspectRatioPresets: [
         CropAspectRatioPreset.square,
         CropAspectRatioPreset.ratio3x2,
-        CropAspectRatioPreset.original,
         CropAspectRatioPreset.ratio4x3,
         CropAspectRatioPreset.ratio16x9
       ],
@@ -316,11 +342,14 @@ class _ExpenseEditView extends StatelessWidget {
                 groupName: groups.length > 1
                     ? formKey.currentState?.value['groupName']
                     : groupName,
-                fundRequestId: fundRequest==null?null:fundRequest!.id,
-                expenseTypeId:fundRequest!=null?fundRequest!.expenseTypeId:
-                (formKey.currentState?.value['expenseType'] as ExpenseType)
-                    .id,
-                total: int.parse(formKey.currentState?.value['total'].toString()??'0'),
+                fundRequestId: fundRequest == null ? null : fundRequest!.id,
+                expenseTypeId: fundRequest != null
+                    ? fundRequest!.expenseTypeId
+                    : (formKey.currentState?.value['expenseType']
+                            as ExpenseType)
+                        .id,
+                total: int.parse(
+                    formKey.currentState?.value['total'].toString() ?? '0'),
                 description: formKey.currentState?.value['description'],
                 closed: false),
             File(croppedFile.path)));
