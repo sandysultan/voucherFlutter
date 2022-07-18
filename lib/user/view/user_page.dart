@@ -1,7 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class UserPage extends StatelessWidget{
+import '../user.dart';
+
+class UserPage extends StatelessWidget {
   const UserPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => UserBloc()..add(const GetUsers()),
+      child: const _UserView(),
+    );
+  }
+
+}
+
+class _UserView extends StatelessWidget {
+  const _UserView({
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,13 +30,13 @@ class UserPage extends StatelessWidget{
             return null;
           },);
         },
-        child: ListView()),
+            child: ListView()),
         Align(
 
           alignment: Alignment.bottomRight,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton(onPressed: (){
+            child: FloatingActionButton(onPressed: () {
               //todo
             },
               heroTag: 'UserPage',
@@ -29,5 +47,4 @@ class UserPage extends StatelessWidget{
       ],
     );
   }
-
 }

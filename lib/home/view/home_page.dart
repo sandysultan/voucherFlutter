@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:http_client/http_client.dart';
 import 'package:iVoucher/closing/view/closing_page.dart';
@@ -22,7 +21,7 @@ import 'package:iVoucher/sales/sales.dart';
 import 'package:iVoucher/sales_report/sales_report.dart';
 import 'package:iVoucher/transfer/transfer.dart';
 import 'package:iVoucher/transfer_report/transfer_report.dart';
-import 'package:iVoucher/user/view/user_page.dart';
+import 'package:iVoucher/user/user.dart';
 
 import '../home.dart';
 
@@ -305,6 +304,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return 'Fund Request';
       case ModuleConstant.closing:
         return 'Month Closing';
+      case ModuleConstant.user:
+        return 'Users';
     }
     return 'iVoucher';
   }
@@ -491,14 +492,14 @@ class DrawerListView extends StatelessWidget {
     //     },
     //   ));
     // }
-    // if (modules.contains(ModuleConstant.user)) {
-    //   list.add(ListTile(
-    //     title: const Text('Users'),
-    //     onTap: () async {
-    //       onModuleChanged(ModuleConstant.user);
-    //     },
-    //   ));
-    // }
+    if (modules.contains(ModuleConstant.user)) {
+      list.add(ListTile(
+        title: const Text('Users'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.user);
+        },
+      ));
+    }
     // if (modules.contains(ModuleConstant.kiosk)) {
     //   list.add(ListTile(
     //     title: const Text('Kiosks'),
