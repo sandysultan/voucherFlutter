@@ -21,6 +21,9 @@ abstract class SalesRepository{
   @POST('/sales')
   Future<AddSalesResponse?> addSales(@Body() Sales body,);
 
+  @DELETE('/sales/{id}')
+  Future<BaseResponse?> deleteSales(@Path('id') int id,);
+
   @POST('/sales/{id}/uploadReceipt')
   @MultiPart()
   Future<BaseResponse?> uploadReceipt(@Path('id') int id,

@@ -11,9 +11,11 @@ class User {
   final String name;
   final String? phone;
   final List<Sales>? sales;
+  @JsonKey(name: 'user_roles')
+  final List<UserRole>? userRoles;
 
   User({required this.uid, required this.email, required this.name,
-    this.phone, this.sales
+    this.phone, this.sales,this.userRoles
   });
 
   factory User.fromJson(Map<String, dynamic> json) =>

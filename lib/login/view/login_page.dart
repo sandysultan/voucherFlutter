@@ -91,10 +91,8 @@ class _LoginView extends StatelessWidget {
                 ],
                 initialValue: kDebugMode ? "sandysultan@gmail.com" : "",
                 // initialValue: kDebugMode ? 'for_test@purpose.only' : "",
-                // initialValue: kDebugMode ? "gunawandeni843@gmail.com" : "",
                 // initialValue: kDebugMode ? "emilda.rika@gmail.com" : "",
                 // initialValue: kDebugMode ? "dianrosadi2020@gmail.com" : "",
-                // initialValue: kDebugMode ? "devis.mathinu.supriadi@gmail.com" : "",
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   label: Text("Email"),

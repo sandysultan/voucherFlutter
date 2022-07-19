@@ -10,6 +10,7 @@ class ModuleConstant{
   static const role='role';
   static const saleDate='saleDate';
   static const saleAdd='saleAdd';
+  static const saleDelete='saleDelete';
   static const saleOperator='saleOperator';
   static const group='group';
   static const userDelete='userDelete';

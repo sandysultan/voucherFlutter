@@ -232,6 +232,11 @@ class _SalesViewState extends State<_SalesView> {
                             //     return 'Voucher data must not be all zero';
                             //   }
                           }
+                          for (var element in value.vouchers) {
+                            if(element.balance<element.damage){
+                              return "${element.name} damage must not bigger than balance";
+                            }
+                          }
                         }
                         return null;
                       },

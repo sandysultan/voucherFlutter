@@ -36,3 +36,4 @@ export 'add_fund_request_response.dart';
 export 'closing_status_response.dart';
 export 'booster.dart';
 export 'capital.dart';
+export 'user_role.dart';

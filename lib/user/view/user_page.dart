@@ -13,7 +13,6 @@ class UserPage extends StatelessWidget {
       child: const _UserView(),
     );
   }
-
 }
 
 class _UserView extends StatelessWidget {
@@ -23,28 +22,61 @@ class _UserView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        RefreshIndicator(onRefresh: () {
-          return Future<void>(() {
-            return null;
-          },);
-        },
-            child: ListView()),
-        Align(
+    return BlocBuilder<UserBloc, UserState>(
+      buildWhen: (previous, current) =>
+          current is GetUserLoading ||
+          current is GetUserSuccess ||
+          current is GetUserFailed,
+      builder: (context, state) {
+        if (state is GetUserSuccess) {
+          return RefreshIndicator(
+              onRefresh: () {
+                final itemsBloc = BlocProvider.of<UserBloc>(context)
+                  ..add(const GetUsers());
 
-          alignment: Alignment.bottomRight,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FloatingActionButton(onPressed: () {
-              //todo
-            },
-              heroTag: 'UserPage',
+                return itemsBloc.stream.firstWhere((e) => e is! GetUsers);
+              },
+              child: ListView.separated(
+                  itemBuilder: (context, index) => InkWell(
 
-              child: const Icon(Icons.add),),
-          ),
-        )
-      ],
+                    onTap: () {
+                      showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            content: SizedBox(
+                              width: 300,
+                              height: 600,
+
+                              child: ListView.separated(
+                                  itemBuilder: (context, index2) => ListTile(
+                                    title: Text(state.users[index].userRoles![index2].roleName),
+                                    subtitle: Text(state.users[index].userRoles![index2].groups.map((e) => e.groupName).toList().join(', ')),
+                                  ),
+                                  separatorBuilder: (_, index2) => const Divider(),
+                                  itemCount: state.users[index].userRoles?.length??0),
+                            ),
+                          ));
+                    },
+                    child: ListTile(
+                          title: Text(state.users[index].name),
+                          subtitle: Text(state.users[index].email),
+                        ),
+                  ),
+                  separatorBuilder: (_, index) => const Divider(),
+                  itemCount: state.users.length));
+        } else if (state is GetUserFailed) {
+          return Center(
+            child: Text(
+              state.message,
+              style: TextStyle(color: Theme.of(context).errorColor),
+            ),
+          );
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
     );
   }
 }

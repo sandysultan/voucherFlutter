@@ -22,8 +22,39 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     on<SalesListRefresh>(_salesListRefresh);
     on<GetGroups>(_getGroups);
     on<GetOperator>(_getOperator);
+    on<DeleteSales>(_deleteSales);
   }
 
+
+  Future<void> _deleteSales(DeleteSales event, Emitter<SalesState> emit) async {
+    emit(DeleteSalesLoading());
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if(token==null){
+      emit(const DeleteSalesFailed('Please re login'));
+    }else {
+      SalesRepository repository = SalesRepository(HttpClient.getClient(token: token));
+      await repository.deleteSales(event.id).then((value) {
+        if (value?.status == 1) {
+            emit(DeleteSalesSuccess());
+            emit(SalesListLoaded(event.sales.where((element) => element.id!=event.id).toList(),true));
+        } else {
+          emit(DeleteSalesFailed(value!.message));
+
+        }
+      }).catchError((error, stack) {
+        logger.e(error);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
+
+        if(error is DioError){
+          emit(DeleteSalesFailed(HttpClient.getDioErrorMessage(error)));
+        }else {
+          emit(DeleteSalesFailed(error.toString()));
+        }
+      });
+    }
+  }
 
   Future<void> _salesRefresh(SalesRefresh event, Emitter<SalesState> emit) async {
     emit(SalesLoading());
@@ -62,7 +93,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
       await kioskRepository.getSales(event.kioskId, event.year, event.month)
           .then((value) {
         if (value?.status == 1) {
-          emit(SalesListLoaded(value!.sales ?? []));
+          emit(SalesListLoaded(value!.sales ?? [],value.isLast??false));
         } else {
           emit(SalesEmpty());
         }

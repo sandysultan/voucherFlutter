@@ -47,3 +47,15 @@ class GetOperator extends SalesEvent{
   @override
   List<Object?> get props => [groupName];
 }
+
+
+
+class DeleteSales extends SalesEvent{
+  final int id;
+  final List<Sales> sales;
+
+  const DeleteSales({required this.id,required this.sales});
+
+  @override
+  List<Object?> get props => [id,sales];
+}

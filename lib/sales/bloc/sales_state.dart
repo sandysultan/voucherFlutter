@@ -22,8 +22,9 @@ class SalesLoaded extends SalesState {
 
 class SalesListLoaded extends SalesState {
   final List<Sales> sales;
+  final bool isLast;
 
-  const SalesListLoaded(this.sales);
+  const SalesListLoaded(this.sales,this.isLast);
 
   @override
   List<Object> get props => [sales];
@@ -72,6 +73,21 @@ class GetOperatorsFailed extends SalesState {
   final String message;
 
   const GetOperatorsFailed(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+class DeleteSalesLoading extends SalesState {
+}
+
+class DeleteSalesSuccess extends SalesState {
+}
+
+class DeleteSalesFailed extends SalesState {
+  final String message;
+
+  const DeleteSalesFailed(this.message);
 
   @override
   List<Object> get props => [message];

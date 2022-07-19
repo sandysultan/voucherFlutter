@@ -6,9 +6,10 @@ part 'kiosk_sales_response.g.dart';
 @JsonSerializable()
 class KioskSalesResponse extends BaseResponse {
   final List<Sales>? sales;
+  final bool? isLast;
 
   KioskSalesResponse(
-      {required int status, required String message, this.sales})
+      {required int status, required String message, this.sales,this.isLast})
       : super(status: status, message: message);
 
   factory KioskSalesResponse.fromJson(Map<String, dynamic> json) =>
