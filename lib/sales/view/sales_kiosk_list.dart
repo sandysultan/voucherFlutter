@@ -199,7 +199,7 @@ class _ListSales extends StatelessWidget {
                 subtitle: Text(
                     'Id : ${items[index].id}\nCash : Rp. ${numberFormat.format(items[index].cash)}'),
                 trailing: state.isLast &&
-                        index == 0 &&
+                        index == 0 && items[0].isClosed==false &&
                         modules?.contains(ModuleConstant.saleDelete) == true
                     ? BlocListener<SalesBloc, SalesState>(
                     listenWhen: (previous, current) =>

@@ -8,13 +8,13 @@ class UserRole {
   final int id;
   final String roleName;
   final String uid;
-  final List<Group> groups;
+  final List<Group>? groups;
 
   UserRole({
     required this.id,
     required this.roleName,
     required this.uid,
-    required this.groups,
+    this.groups,
   });
 
   factory UserRole.fromJson(Map<String, dynamic> json) => _$UserRoleFromJson(json);

@@ -34,10 +34,9 @@ class _GetGroupView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<TransferPageBloc, TransferPageState>(
       buildWhen: (previous, current) =>
-          previous != current &&
-          (current is GetGroupLoading ||
-              current is GetGroupSuccess ||
-              current is GetGroupFailed),
+          current is GetGroupLoading ||
+          current is GetGroupSuccess ||
+          current is GetGroupFailed,
       builder: (context, state) {
         Logger().d('_GetGroupViewState rebuild with state $state');
         if (state is GetGroupLoading) {
@@ -243,7 +242,7 @@ class _SalesListState extends State<_SalesList> {
                           builder: (_) {
                             var cashTotal = 0;
                             for (var sale in _selected) {
-                                cashTotal += sale.cash;
+                              cashTotal += sale.cash;
                             }
                             return AlertDialog(
                               content: Padding(
@@ -319,12 +318,15 @@ class _SalesListState extends State<_SalesList> {
                                       Navigator.of(context).pop();
                                     },
                                     child: const Text('Close')),
-                                if(_modules?.contains(ModuleConstant.transferAdd)==true) ...[
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop(true);
-                                    },
-                                    child: const Text('Continue')),]
+                                if (_modules?.contains(
+                                        ModuleConstant.transferAdd) ==
+                                    true) ...[
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(true);
+                                      },
+                                      child: const Text('Continue')),
+                                ]
                               ],
                             );
                           });
@@ -400,8 +402,8 @@ class _SalesListState extends State<_SalesList> {
     var total = 0;
     List<Sales> sales = [];
     for (var sale in _selected) {
-        sales.add(sale);
-        total += sale.cash;
+      sales.add(sale);
+      total += sale.cash;
     }
     List<int> salesIds = sales.map((e) => e.id ?? 0).toList();
     context.read<TransferPageBloc>().add(
@@ -449,18 +451,18 @@ class _StickyHeaderList extends StatefulWidget {
 
 class _StickyHeaderListState extends State<_StickyHeaderList> {
   late final List<Sales> _selected;
-  int _total=0;
-  int _totalSelected=0;
+  int _total = 0;
+  int _totalSelected = 0;
 
   @override
   void initState() {
     _selected = widget.selected;
-    _total=0;
+    _total = 0;
 
-    _totalSelected =0;
+    _totalSelected = 0;
     for (var sale in widget.sales) {
-      _total +=sale.cash;
-      if(_selected.contains(sale)) {
+      _total += sale.cash;
+      if (_selected.contains(sale)) {
         _totalSelected++;
       }
     }
@@ -474,8 +476,11 @@ class _StickyHeaderListState extends State<_StickyHeaderList> {
     return SliverStickyHeader(
       header: _Header(
           name: widget.operator?.name ?? '',
-          total: '${numberFormat.format(_total)} - 10% = ${numberFormat.format(_total*0.9)}',
-          value: _totalSelected==0?false:(_totalSelected==widget.sales.length?true:null)),
+          total:
+              '${numberFormat.format(_total)} - 10% = ${numberFormat.format(_total * 0.9)}',
+          value: _totalSelected == 0
+              ? false
+              : (_totalSelected == widget.sales.length ? true : null)),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, i) => ListTile(
@@ -494,7 +499,6 @@ class _StickyHeaderListState extends State<_StickyHeaderList> {
             ),
             title: Text(
                 "${widget.sales[i].kiosk?.kioskName ?? ""}, Rp. ${numberFormat.format(widget.sales[i].cash)}"),
-
             subtitle: Text(dateFormat.format(widget.sales[i].date!)),
             trailing: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -503,13 +507,13 @@ class _StickyHeaderListState extends State<_StickyHeaderList> {
                 // value:  false,
                 onChanged: (bool? value) {
                   setState(() {
-                    if(_selected.contains(widget.sales[i])) {
+                    if (_selected.contains(widget.sales[i])) {
                       _selected.remove(widget.sales[i]);
-                      _total-=widget.sales[i].cash;
+                      _total -= widget.sales[i].cash;
                       _totalSelected--;
                     } else {
                       _selected.add(widget.sales[i]);
-                      _total+=widget.sales[i].cash;
+                      _total += widget.sales[i].cash;
                       _totalSelected++;
                     }
                   });
@@ -530,7 +534,6 @@ class _Header extends StatelessWidget {
     required this.name,
     required this.total,
     this.value,
-
   }) : super(key: key);
 
   final String name;

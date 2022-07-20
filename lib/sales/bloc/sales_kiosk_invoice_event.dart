@@ -7,8 +7,6 @@ abstract class SalesKioskInvoiceEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-
-
 class UpdateKioskWhatsapp extends SalesKioskInvoiceEvent{
   final Kiosk kiosk;
 

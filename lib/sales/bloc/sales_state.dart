@@ -94,3 +94,25 @@ class DeleteSalesFailed extends SalesState {
 }
 
 
+
+class GetLastClosingLoading extends SalesState {
+}
+
+class GetLastClosingSuccess extends SalesState {
+  final Closing? closing;
+
+  const GetLastClosingSuccess(this.closing);
+
+  @override
+  List<Object> get props => [if(closing!=null)[closing]];
+}
+
+class GetLastClosingFailed extends SalesState {
+  final String message;
+
+  const GetLastClosingFailed(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+

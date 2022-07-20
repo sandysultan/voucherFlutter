@@ -26,7 +26,9 @@ class Sales {
   @JsonKey(name:'sales_details')
   final List<SalesDetail>? salesDetails;
 
-  Sales({
+  final bool isClosed;
+
+  Sales( {
     this.id,
     this.date,
     required this.kioskId,
@@ -43,6 +45,7 @@ class Sales {
     this.operatorUser,
     this.description,
     this.kiosk,
+    this.isClosed=false,
   });
 
   Sales copy({
@@ -62,6 +65,7 @@ class Sales {
     bool? fundTransferred,
     List<SalesDetail>? salesDetails,
     User? operatorUser,
+    bool? isClosed,
   }){
     return Sales(
         id: id??this.id,
@@ -79,6 +83,7 @@ class Sales {
       fundTransferred: fundTransferred??this.fundTransferred,
       salesDetails: salesDetails??this.salesDetails,
       operatorUser: operatorUser??this.operatorUser,
+      isClosed: isClosed??this.isClosed,
     );
   }
 

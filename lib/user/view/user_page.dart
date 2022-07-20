@@ -50,7 +50,7 @@ class _UserView extends StatelessWidget {
                               child: ListView.separated(
                                   itemBuilder: (context, index2) => ListTile(
                                     title: Text(state.users[index].userRoles![index2].roleName),
-                                    subtitle: Text(state.users[index].userRoles![index2].groups.map((e) => e.groupName).toList().join(', ')),
+                                    subtitle: Text((state.users[index].userRoles![index2].groups??[]).map<String>((e) => e.groupName).toList().join(', ')),
                                   ),
                                   separatorBuilder: (_, index2) => const Divider(),
                                   itemCount: state.users[index].userRoles?.length??0),

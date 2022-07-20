@@ -12,6 +12,10 @@ abstract class ClosingRepository{
   Future<StatusClosingResponse?> getStatus(
       {@Query('groupName') required  String groupName,});
 
+  @GET('/closing/getLastClosing')
+  Future<LastClosingResponse?> getLastClosing(
+      {@Query('groupName') required  String groupName,});
+
 
   @POST('/closing')
   Future<StatusClosingResponse?> close(

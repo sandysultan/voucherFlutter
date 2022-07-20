@@ -38,6 +38,15 @@ class GetGroups extends SalesEvent{
 
 }
 
+class GetLastClosing extends SalesEvent{
+
+  final String groupName;
+  const GetLastClosing({required this.groupName});
+
+  @override
+  List<Object?> get props => [groupName];
+}
+
 
 class GetOperator extends SalesEvent{
   final String groupName;
@@ -47,8 +56,6 @@ class GetOperator extends SalesEvent{
   @override
   List<Object?> get props => [groupName];
 }
-
-
 
 class DeleteSales extends SalesEvent{
   final int id;

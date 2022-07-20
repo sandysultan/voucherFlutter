@@ -23,6 +23,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     on<GetGroups>(_getGroups);
     on<GetOperator>(_getOperator);
     on<DeleteSales>(_deleteSales);
+    on<GetLastClosing>(_getLastClosing);
   }
 
 
@@ -169,4 +170,32 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
   }
 
 
+  Future<void> _getLastClosing(GetLastClosing event, Emitter<SalesState> emit) async {
+    emit(GetLastClosingLoading());
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if(token==null){
+      emit(const GetLastClosingFailed('Authentication Failed'));
+    }else {
+      ClosingRepository repository = ClosingRepository(HttpClient.getClient(token: token));
+      await repository.getLastClosing(groupName:event.groupName)
+          .then((value) {
+        if (value?.status == 1) {
+          emit(GetLastClosingSuccess(value!.closing));
+        } else {
+          emit(GetLastClosingFailed(value?.message??"Server error"));
+        }
+      }).catchError((error, stack) {
+        logger.e(error);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
+
+        if(error is DioError){
+          emit(GetLastClosingFailed(HttpClient.getDioErrorMessage(error)));
+        }else {
+          emit(GetLastClosingFailed(error.toString()));
+        }
+      });
+    }
+  }
 }

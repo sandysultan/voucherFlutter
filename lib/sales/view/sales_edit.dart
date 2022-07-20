@@ -43,6 +43,8 @@ class SalesEdit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    List<String>? modules = context.read<LocalRepository>().currentUser()?.modules;
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -52,20 +54,27 @@ class SalesEdit extends StatelessWidget {
           create: (context) => SalesEditSaveCubit(),
         ),
         BlocProvider(
-          create: (context) => SalesBloc(),
+          create: (context) {
+            var salesBloc = SalesBloc();
+            if(modules?.contains(ModuleConstant.saleDate)==true){
+              salesBloc.add(GetLastClosing(groupName: groupName));
+            }
+            return salesBloc;
+          } ,
         ),
         BlocProvider(
           create: (context) => SalesEditPowerCubit()..get(item.id),
         ),
       ],
-      child: _SalesView(item),
+      child: _SalesView(item:item,modules:modules),
     );
   }
 }
 
 class _SalesView extends StatefulWidget {
-  const _SalesView(this.item, {Key? key}) : super(key: key);
+  const _SalesView( {Key? key,required this.item, this.modules,}) : super(key: key);
   final Kiosk item;
+  final List<String>? modules;
 
   @override
   State<_SalesView> createState() => _SalesViewState();
@@ -94,19 +103,18 @@ class _SalesViewState extends State<_SalesView> {
 
   final _cashController = TextEditingController();
 
-  late List<String>? _modules;
 
   Future<Uint8List>? _receiptByte;
 
   @override
   void initState() {
-    _modules = context.read<LocalRepository>().currentUser()?.modules;
+    // widget.modules = context.read<LocalRepository>().currentUser()?.modules;
     if (widget.item.sales?.isNotEmpty == true) {
       _lastSales = widget.item.sales![0];
       _debt = _lastSales == null ? 0 : (_lastSales!.total - _lastSales!.cash);
     }
     _powerCost = widget.item.powerCost;
-    if (_modules?.contains(ModuleConstant.saleOperator) == true) {
+    if (widget.modules?.contains(ModuleConstant.saleOperator) == true) {
       context
           .read<SalesBloc>()
           .add(GetOperator(groupName: widget.item.groupName));
@@ -125,25 +133,55 @@ class _SalesViewState extends State<_SalesView> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              if (_modules?.contains(ModuleConstant.saleDate) == true) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: FormBuilderDateTimePicker(
-                    name: 'date',
-                    initialDate: DateTime.now(),
-                    initialValue: DateTime.now(),
-                    lastDate: DateTime.now(),
-                    inputType: InputType.date,
-                    validator: FormBuilderValidators.required(),
-                    format: DateFormat('dd MMMM yyyy'),
-                    decoration: const InputDecoration(label: Text('Date')),
-                  ),
+              if (widget.modules?.contains(ModuleConstant.saleDate) == true) ...[
+                BlocBuilder<SalesBloc, SalesState>(
+                  buildWhen: (previous, current) =>
+                      current is GetLastClosingLoading ||
+                      current is GetLastClosingSuccess ||
+                      current is GetLastClosingFailed,
+                  builder: (context, state) {
+                    if(state is GetLastClosingSuccess) {
+                      DateTime? minDate;
+                      if(state.closing!=null){
+                        minDate=DateTime(state.closing!.year,state.closing!.month+1,1);
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: FormBuilderDateTimePicker(
+                          name: 'date',
+                          initialDate: DateTime.now(),
+                          initialValue: DateTime.now(),
+
+                          lastDate: DateTime.now(),
+                          inputType: InputType.date,
+                          validator: FormBuilderValidators.compose([
+                            FormBuilderValidators.required(),
+                            (value){
+                              if(minDate!=null){
+                                if(value?.isBefore(minDate)==true){
+                                  return "Minimum date is ${DateFormat('dd MMMM yyyy').format(minDate)}";
+                                }
+                              }
+                              return null;
+                            }
+                          ]),
+                          format: DateFormat('dd MMMM yyyy'),
+                          decoration: const InputDecoration(
+                              label: Text('Date')),
+                        ),
+                      );
+                    }else if(state is GetLastClosingFailed){
+                      return Center(child: Text(state.message,style: TextStyle(color: Theme.of(context).errorColor),),);
+                    }else{
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
                 ),
                 const SizedBox(
                   height: 16,
                 ),
               ],
-              if (_modules?.contains(ModuleConstant.saleOperator) == true) ...[
+              if (widget.modules?.contains(ModuleConstant.saleOperator) == true) ...[
                 BlocBuilder<SalesBloc, SalesState>(
                   buildWhen: (previous, current) =>
                       previous != current &&
@@ -206,8 +244,7 @@ class _SalesViewState extends State<_SalesView> {
                           } else {
                             _voucherSold = 0;
                             for (VoucherItem voucher in value?.vouchers ?? []) {
-                              _voucherSold += voucher.stock -
-                                  voucher.balance;
+                              _voucherSold += voucher.stock - voucher.balance;
                             }
                             _kioskProfit =
                                 _voucherSold * widget.item.kioskShare.toInt();
@@ -233,7 +270,7 @@ class _SalesViewState extends State<_SalesView> {
                             //   }
                           }
                           for (var element in value.vouchers) {
-                            if(element.balance<element.damage){
+                            if (element.balance < element.damage) {
                               return "${element.name} damage must not bigger than balance";
                             }
                           }
@@ -263,7 +300,8 @@ class _SalesViewState extends State<_SalesView> {
                       _voucherSold = 0;
                       for (var voucher in state.vouchers) {
                         var stock = mapLastDetails.containsKey(voucher.id)
-                            ? mapLastDetails[voucher.id]!.balance -  mapLastDetails[voucher.id]!.damage +
+                            ? mapLastDetails[voucher.id]!.balance -
+                                mapLastDetails[voucher.id]!.damage +
                                 mapLastDetails[voucher.id]!.restock
                             : 0;
                         _voucherSold += stock;
@@ -769,7 +807,8 @@ class _SalesViewState extends State<_SalesView> {
                                         sales,
                                         _receiptPath != null
                                             ? File(_receiptPath!)
-                                            : null,_receiptByte);
+                                            : null,
+                                        _receiptByte);
                                   });
                                 }
                               });

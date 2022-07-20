@@ -33,7 +33,7 @@ class _FundRequestGroupView extends StatelessWidget {
           return Center(child: Text(state.message,style: const TextStyle(color: Colors.red),),);
         }else if(state is GetGroupSuccess){
           _groups=state.groups;
-          return _FundRequestView();
+          return const _FundRequestView();
         }else{
           return const Center(child: CircularProgressIndicator(),);
         }
@@ -84,8 +84,8 @@ class _FundRequestViewState extends State<_FundRequestView>
       child: Column(
         children: [
           TabBar(
-            unselectedLabelColor: Colors.grey,
-            labelColor: Colors.black,
+            // unselectedLabelColor: Colors.grey,
+            // labelColor: Colors.black,
             controller: _tabController,
             tabs: const [
               Tab(
@@ -299,6 +299,7 @@ class _FundRequestList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     NumberFormat numberFormat = NumberFormat('#,###');
+    DateFormat dateFormat = DateFormat('dd MMMM yyyy');
     return ListView.separated(
       itemBuilder: (BuildContext context, int index) => ListTile(
         onTap: () {
@@ -311,9 +312,10 @@ class _FundRequestList extends StatelessWidget {
           });
 
         },
+        isThreeLine: true,
         title: Text(
             "Rp. ${numberFormat.format(items[index].total)} req. by ${items[index].requestedByUser?.name ?? ""}"),
-        subtitle: Text(items[index].expenseType?.expenseTypeName ?? ""),
+        subtitle: Text("${dateFormat.format(items[index].createdAt!)}\n${items[index].expenseType?.expenseTypeName ?? ""}"),
       ),
       separatorBuilder: (BuildContext context, int index) => const Divider(),
       itemCount: items.length,
