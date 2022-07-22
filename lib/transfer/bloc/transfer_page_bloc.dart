@@ -98,7 +98,7 @@ class TransferPageBloc extends Bloc<TransferPageEvent, TransferPageState> {
 
 
   Future<void> _getGroups(GetGroups event, Emitter<TransferPageState> emit) async {
-    emit(SalesLoading());
+    emit(GetGroupLoading());
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     if(token==null){
       emit(const GetGroupFailed('Authentication Failed'));

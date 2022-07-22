@@ -130,9 +130,6 @@ class _SalesReportViewState extends State<_SalesReportView> {
                       child: Column(
                         children: [
                           Row(
-                              // textBaseline: TextBaseline.ideographic,
-                              // mainAxisAlignment: MainAxisAlignment.center,
-                              //   crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 IconButton(
                                     onPressed: () {

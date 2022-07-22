@@ -79,6 +79,18 @@ createNotificationChannel() async {
       description: 'Closing month by admin',
       importance: Importance.max,
     ),
+    'capital': const AndroidNotificationChannel(
+      'capital',
+      'Investor Capital',
+      description: 'Investment made by investor',
+      importance: Importance.max,
+    ),
+    'booster': const AndroidNotificationChannel(
+      'booster',
+      'Investor Capital Booster',
+      description: 'Booster for capital investor',
+      importance: Importance.max,
+    ),
   };
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =

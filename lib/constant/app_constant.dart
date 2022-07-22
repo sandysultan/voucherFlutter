@@ -26,4 +26,9 @@ class ModuleConstant{
   static const fundRequestUser='fundRequestUser';
   static const closing='closing';
   static const closingReport='closingReport';
+  static const capital='capital';
+  static const capitalAdd='capitalAdd';
+  static const booster='booster';
+  static const boosterAdd='boosterAdd';
+  static const boosterDelete='boosterDelete';
 }

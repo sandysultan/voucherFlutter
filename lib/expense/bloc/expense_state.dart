@@ -97,3 +97,27 @@ class GetExpenseTypeError extends ExpenseState {
   @override
   List<Object> get props => [message];
 }
+
+
+
+class GetLastClosingLoading extends ExpenseState {
+}
+
+class GetLastClosingSuccess extends ExpenseState {
+  final Closing? closing;
+
+  const GetLastClosingSuccess(this.closing);
+
+  @override
+  List<Object> get props => [if(closing!=null)[closing]];
+}
+
+class GetLastClosingFailed extends ExpenseState {
+  final String message;
+
+  const GetLastClosingFailed(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+

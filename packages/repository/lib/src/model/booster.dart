@@ -6,7 +6,7 @@ part 'booster.g.dart';
 
 @JsonSerializable()
 class Booster {
-  final int id;
+  final int? id;
   final bool status;
   final String groupName;
   final String uid;
@@ -15,8 +15,8 @@ class Booster {
 
   Booster({
     required this.groupName,
-    required this.id,
-    required this.status,
+    this.id,
+    this.status=true,
     required this.uid,
     required this.boost,
     this.user,

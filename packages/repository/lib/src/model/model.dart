@@ -39,3 +39,7 @@ export 'capital.dart';
 export 'user_role.dart';
 export 'closing.dart';
 export 'last_closing_response.dart';
+export 'investor_response.dart';
+export 'capital_response.dart';
+export 'add_capital_response.dart';
+export 'booster_response.dart';

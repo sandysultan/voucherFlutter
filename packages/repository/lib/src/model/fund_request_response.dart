@@ -1,4 +1,3 @@
-import 'package:repository/src/model/base_response.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'model.dart';

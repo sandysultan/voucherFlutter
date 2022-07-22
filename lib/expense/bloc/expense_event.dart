@@ -44,3 +44,14 @@ class AddExpense extends ExpenseEvent{
   List<Object?> get props => [expense,receipt];
 }
 
+
+
+class GetLastClosing extends ExpenseEvent{
+
+  final String groupName;
+  const GetLastClosing({required this.groupName});
+
+  @override
+  List<Object?> get props => [groupName];
+}
+

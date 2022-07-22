@@ -1,1 +1,1 @@
-// TODO Implement this library.
+export 'closing_page.dart';

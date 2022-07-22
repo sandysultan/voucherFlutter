@@ -30,9 +30,7 @@ abstract class SalesRepository{
       @Part(value: 'receipt') File receipt,);
 
 
-  //todo add
-  //filename: "salesReceiptWeb.jpg",
-  //in g.dart for this
+  //note for web, add filename: "salesReceiptWeb.jpg", in g.dart for this
   @POST('/sales/{id}/uploadReceipt')
   @MultiPart()
   Future<BaseResponse?> uploadReceiptForWeb(@Path('id') int id,

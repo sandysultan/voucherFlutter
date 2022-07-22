@@ -9,8 +9,5 @@ abstract class UserEvent extends Equatable {
 
 
 class GetUsers extends UserEvent{
-
   const GetUsers();
-
-
 }

@@ -9,7 +9,6 @@ abstract class UserState extends Equatable {
 class UserInitial extends UserState {
 }
 
-
 class GetUserLoading extends UserState {
 }
 

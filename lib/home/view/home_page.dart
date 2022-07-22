@@ -8,6 +8,8 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:http_client/http_client.dart';
+import 'package:iVoucher/booster/booster.dart';
+import 'package:iVoucher/capital/capital.dart';
 import 'package:iVoucher/closing/view/closing_page.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
@@ -33,6 +35,8 @@ const int actionAddExpense = 3;
 const int actionAllKiosk = 4;
 const int actionActiveKioskOnly = 5;
 const int actionAddFundRequest = 6;
+const int actionAddCapital = 7;
+const int actionAddBooster = 8;
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -219,6 +223,12 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       case ModuleConstant.closing:
         _activePage = const ClosingPage();
         break;
+      case ModuleConstant.capital:
+        _activePage = const CapitalPage();
+        break;
+      case ModuleConstant.booster:
+        _activePage = const BoosterPage();
+        break;
       default:
         _activePage = const NotificationPage();
     }
@@ -238,12 +248,41 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           ]
         ];
       case ModuleConstant.expense:
-        return [
-          IconButton(onPressed: (){
-            context.read<HomeBloc>().add(const AppbarAction(actionAddExpense));
-            context.read<HomeBloc>().add(const AppbarAction(actionNothing));
-          }, icon: const Icon(Icons.add))
-        ];
+        if(_modules?.contains(ModuleConstant.expenseAdd)==true) {
+          return [
+            IconButton(onPressed: () {
+              context.read<HomeBloc>().add(
+                  const AppbarAction(actionAddExpense));
+              context.read<HomeBloc>().add(const AppbarAction(actionNothing));
+            }, icon: const Icon(Icons.add))
+          ];
+        }else{
+          return [];
+        }
+      case ModuleConstant.capital:
+
+        if(_modules?.contains(ModuleConstant.capitalAdd)==true) {
+          return [
+            IconButton(onPressed: (){
+              context.read<HomeBloc>().add(const AppbarAction(actionAddCapital));
+              context.read<HomeBloc>().add(const AppbarAction(actionNothing));
+            }, icon: const Icon(Icons.add))
+          ];
+        } else {
+          return [];
+        }
+      case ModuleConstant.booster:
+
+        if(_modules?.contains(ModuleConstant.boosterAdd)==true) {
+          return [
+            IconButton(onPressed: (){
+              context.read<HomeBloc>().add(const AppbarAction(actionAddBooster));
+              context.read<HomeBloc>().add(const AppbarAction(actionNothing));
+            }, icon: const Icon(Icons.add))
+          ];
+        } else {
+          return [];
+        }
       case ModuleConstant.sale:
         return [
           PopupMenuButton<int>(
@@ -304,8 +343,12 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return 'Fund Request';
       case ModuleConstant.closing:
         return 'Month Closing';
+      case ModuleConstant.capital:
+        return 'Capital';
       case ModuleConstant.user:
         return 'Users';
+      case ModuleConstant.booster:
+        return 'Booster';
     }
     return 'iVoucher';
   }
@@ -399,7 +442,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
       try {
         EasyLoading.show(status: 'Changing password');
-        UserCredential userCredential =
+        // UserCredential userCredential =
             await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: values['email'],
           password: values['password'],
@@ -569,6 +612,22 @@ class DrawerListView extends StatelessWidget {
         title: const Text('Closing Report'),
         onTap: () async {
           onModuleChanged(ModuleConstant.closingReport);
+        },
+      ));
+    }
+    if (modules.contains(ModuleConstant.capital)) {
+      list.add(ListTile(
+        title: const Text('Capital'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.capital);
+        },
+      ));
+    }
+    if (modules.contains(ModuleConstant.booster)) {
+      list.add(ListTile(
+        title: const Text('Booster'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.booster);
         },
       ));
     }

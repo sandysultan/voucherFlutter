@@ -1,4 +1,4 @@
-// TODO Implement this library.
+
 import 'dart:async';
 import 'dart:io';
 
@@ -25,6 +25,36 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     on<ExpenseRefresh>(_expenseRefresh);
     on<AddExpense>(_addExpense);
     on<GetExpenseType>(_getExpenseType);
+    on<GetLastClosing>(_getLastClosing);
+  }
+
+  Future<void> _getLastClosing(GetLastClosing event, Emitter<ExpenseState> emit) async {
+    emit(GetLastClosingLoading());
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if(token==null){
+      emit(const GetLastClosingFailed('Authentication Failed'));
+    }else {
+      ClosingRepository repository = ClosingRepository(HttpClient.getClient(token: token));
+      await repository.getLastClosing(groupName:event.groupName)
+          .then((value) {
+        if (value?.status == 1) {
+          emit(GetLastClosingSuccess(value!.closing));
+        } else {
+          emit(GetLastClosingFailed(value?.message??"Server error"));
+        }
+      }).catchError((error, stack) {
+        _logger.e(error);
+        if(!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
+
+        if(error is DioError){
+          emit(GetLastClosingFailed(HttpClient.getDioErrorMessage(error)));
+        }else {
+          emit(GetLastClosingFailed(error.toString()));
+        }
+      });
+    }
   }
 
   Future<void> _addExpense(AddExpense event, Emitter<ExpenseState> emit) async {

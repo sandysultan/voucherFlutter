@@ -51,7 +51,9 @@ class ExpenseEditPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ExpenseBloc()..add(GetExpenseType()),
+      create: (context) => ExpenseBloc()
+        ..add(GetExpenseType())
+        ..add(GetLastClosing(groupName: groupName)),
       child: _ExpenseEditView(
         groupName: groupName,
         date: date,
@@ -97,7 +99,7 @@ class _ExpenseEditView extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                if(expense !=null) ...[
+                if (expense != null) ...[
                   FormBuilderTextField(
                     name: 'id',
                     initialValue: expense!.id.toString(),
@@ -107,12 +109,19 @@ class _ExpenseEditView extends StatelessWidget {
                   )
                 ],
                 (groups.length > 1)
-                    ? FormBuilderDropdown(
+                    ? FormBuilderDropdown<String>(
                         name: 'groupName',
                         initialValue: groupName,
                         validator: FormBuilderValidators.required(),
                         decoration: const InputDecoration(
                             label: Text('Group'), isDense: true),
+                        onChanged: (value) {
+                          if (value != null) {
+                            context
+                                .read<ExpenseBloc>()
+                                .add(GetLastClosing(groupName: value));
+                          }
+                        },
                         items: groups
                             .map((e) =>
                                 DropdownMenuItem(value: e, child: Text(e)))
@@ -125,14 +134,42 @@ class _ExpenseEditView extends StatelessWidget {
                             label: Text('Group'), isDense: true),
                       ),
                 expense == null
-                    ? FormBuilderDateTimePicker(
-                        name: 'date',
-                        format: DateFormat('dd MMMM yyyy'),
-                        inputType: InputType.date,
-                        initialValue: date,
-                        validator: FormBuilderValidators.required(),
-                        decoration: const InputDecoration(
-                            label: Text('Date'), isDense: true),
+                    ? BlocBuilder<ExpenseBloc, ExpenseState>(
+                        buildWhen: (previous, current) =>
+                            current is GetLastClosingLoading ||
+                            current is GetLastClosingSuccess ||
+                            current is GetLastClosingFailed,
+                        builder: (context, state) {
+                          if (state is GetLastClosingSuccess) {
+                            DateTime? minDate;
+                            if(state.closing!=null){
+                              minDate=DateTime(state.closing!.year,state.closing!.month+1,1);
+                            }
+                            return FormBuilderDateTimePicker(
+                              name: 'date',
+                              format: DateFormat('dd MMMM yyyy'),
+                              inputType: InputType.date,
+                              initialValue: date,
+                              validator: FormBuilderValidators.compose([
+                                FormBuilderValidators.required(),
+                                    (value){
+                                  if(minDate!=null){
+                                    if(value?.isBefore(minDate)==true){
+                                      return "Minimum date is ${DateFormat('dd MMMM yyyy').format(minDate)}";
+                                    }
+                                  }
+                                  return null;
+                                }
+                              ]),
+                              decoration: const InputDecoration(
+                                  label: Text('Date'), isDense: true),
+                            );
+                          }else if(state is GetLastClosingFailed){
+                            return Center(child: Text(state.message,style: TextStyle(color: Theme.of(context).errorColor),),);
+                          }else{
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                        },
                       )
                     : FormBuilderTextField(
                         name: 'date',
