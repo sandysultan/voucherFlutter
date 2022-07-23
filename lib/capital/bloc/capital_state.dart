@@ -7,8 +7,6 @@ abstract class CapitalState extends Equatable {
 }
 
 class CapitalInitial extends CapitalState {
-  @override
-  List<Object> get props => [];
 }
 
 

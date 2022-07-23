@@ -349,6 +349,10 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return 'Users';
       case ModuleConstant.booster:
         return 'Booster';
+      case ModuleConstant.deposit:
+        return 'Deposit';
+      case ModuleConstant.asset:
+        return 'Asset';
     }
     return 'iVoucher';
   }
@@ -416,6 +420,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
                           if (value != newPassword) {
                             return 'Password not match';
                           }
+                          return null;
                         }
                       ]),
                     ),
@@ -628,6 +633,22 @@ class DrawerListView extends StatelessWidget {
         title: const Text('Booster'),
         onTap: () async {
           onModuleChanged(ModuleConstant.booster);
+        },
+      ));
+    }
+    if (modules.contains(ModuleConstant.deposit)) {
+      list.add(ListTile(
+        title: const Text('Deposit'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.deposit);
+        },
+      ));
+    }
+    if (modules.contains(ModuleConstant.asset)) {
+      list.add(ListTile(
+        title: const Text('Asset'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.asset);
         },
       ));
     }

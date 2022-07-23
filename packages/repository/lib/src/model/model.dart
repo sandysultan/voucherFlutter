@@ -43,3 +43,7 @@ export 'investor_response.dart';
 export 'capital_response.dart';
 export 'add_capital_response.dart';
 export 'booster_response.dart';
+export 'asset_response.dart';
+export 'deposit_response.dart';
+export 'deposit.dart';
+export 'asset.dart';
