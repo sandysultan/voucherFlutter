@@ -11,6 +11,7 @@ import 'package:http_client/http_client.dart';
 import 'package:iVoucher/booster/booster.dart';
 import 'package:iVoucher/capital/capital.dart';
 import 'package:iVoucher/closing/view/closing_page.dart';
+import 'package:iVoucher/deposit/deposit.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -228,6 +229,12 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         break;
       case ModuleConstant.booster:
         _activePage = const BoosterPage();
+        break;
+      case ModuleConstant.deposit:
+        _activePage = const DepositPage();
+        break;
+      case ModuleConstant.asset:
+        _activePage = const DepositPage();
         break;
       default:
         _activePage = const NotificationPage();

@@ -9,3 +9,11 @@ abstract class DepositEvent extends Equatable {
 
 class GetGroups extends DepositEvent {
 }
+
+class GetDeposit extends DepositEvent {
+  final String groupName;
+  final int year;
+  final int month;
+
+  const GetDeposit(this.groupName, this.year, this.month);
+}

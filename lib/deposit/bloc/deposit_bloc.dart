@@ -15,6 +15,7 @@ part 'deposit_state.dart';
 class DepositBloc extends Bloc<DepositEvent, DepositState> {
   DepositBloc() : super(DepositInitial()) {
     on<GetGroups>(_getGroups);
+    on<GetDeposit>(_getDeposit);
   }
   Future<void> _getGroups(GetGroups event, Emitter<DepositState> emit) async {
     emit(GetGroupLoading());
