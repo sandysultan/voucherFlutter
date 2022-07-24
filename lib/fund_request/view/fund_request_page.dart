@@ -95,6 +95,7 @@ class _FundRequestViewState extends State<_FundRequestView>
                 text: 'Paid',
               ),
             ],
+
           ),
           Expanded(
               child: TabBarView(

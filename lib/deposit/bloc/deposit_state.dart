@@ -30,3 +30,25 @@ class GetGroupFailed extends DepositState {
   @override
   List<Object> get props => [message];
 }
+
+
+class GetDepositLoading extends DepositState {
+}
+
+class GetDepositSuccess extends DepositState {
+  final List<Deposit> deposits;
+
+  const GetDepositSuccess(this.deposits);
+
+  @override
+  List<Object> get props => [deposits];
+}
+
+class GetDepositFailed extends DepositState {
+  final String message;
+
+  const GetDepositFailed(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

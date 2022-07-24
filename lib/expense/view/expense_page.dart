@@ -41,7 +41,7 @@ class _GetGroupView extends StatelessWidget {
           );
         } else if (state is GetGroupFailed) {
           return Center(
-            child: Text(state.message),
+            child: Text(state.message,style: TextStyle(color: Theme.of(context).errorColor),),
           );
         } else if (state is GetGroupSuccess) {
           return _ExpenseView(state.group);
