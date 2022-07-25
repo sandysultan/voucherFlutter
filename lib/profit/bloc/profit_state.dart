@@ -97,6 +97,27 @@ class GetLastClosingFailed extends ProfitState {
 class PickReceiptStart extends ProfitState {
 }
 
+class ConvertProfitLoading extends ProfitState {
+}
+
+class ConvertProfitSuccess extends ProfitState {
+  final Closing? closing;
+
+  const ConvertProfitSuccess(this.closing);
+
+  @override
+  List<Object> get props => [if(closing!=null)[closing]];
+}
+
+class ConvertProfitFailed extends ProfitState {
+  final String message;
+
+  const ConvertProfitFailed(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
 
 class ProfitTransferLoading extends ProfitState {
 }

@@ -70,5 +70,21 @@ class ProfitTransfer extends ProfitEvent {
   });
 
   @override
-  List<Object?> get props => [uid, file];
+  List<Object?> get props => [uid, file,date,groupName,total];
+}
+
+class ConvertProfit extends ProfitEvent{
+  final String uid;
+  final String groupName;
+  final int total;
+
+  const ConvertProfit({
+    required this.uid,
+    required this.groupName,
+    required this.total,
+  });
+
+  @override
+  List<Object?> get props => [uid, groupName,total];
+
 }
