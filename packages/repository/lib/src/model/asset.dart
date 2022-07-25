@@ -11,8 +11,10 @@ class Asset {
   final String uid;
   final DateTime date;
   final int total;
-  final int expenseId;
+  final int? expenseId;
+  final double? percentage;
   final User user;
+  final Expense? expense;
 
   Asset({
     required this.groupName,
@@ -21,8 +23,29 @@ class Asset {
     required this.date,
     required this.total,
     required this.user,
-    required this.expenseId,
+    this.percentage,
+    this.expenseId,
+    this.expense,
   });
+  Asset copy({int? id,
+    String? groupName,
+    String? uid,
+    DateTime? date,
+    int? total,
+    double? percentage,
+    int? expenseId,
+    User? user,}) {
+    return Asset(
+      id: id ?? this.id,
+      groupName: groupName ?? this.groupName,
+      uid: uid ?? this.uid,
+      date: date ?? this.date,
+      total: total ?? this.total,
+      percentage: percentage ?? this.percentage,
+      expenseId: expenseId ?? this.expenseId,
+      user: user ?? this.user,
+    );
+  }
 
   factory Asset.fromJson(Map<String, dynamic> json) =>
       _$AssetFromJson(json);

@@ -94,6 +94,15 @@ class SalesKioskView extends StatelessWidget {
                 child: Padding(
               padding: EdgeInsets.symmetric(vertical: 6),
               child: Text(
+                'DMG',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: Colors.white),
+              ),
+            )),
+            TableCell(
+                child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 6),
+              child: Text(
                 'Restock',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: Colors.white),
@@ -103,7 +112,7 @@ class SalesKioskView extends StatelessWidget {
                 child: Padding(
               padding: EdgeInsets.symmetric(vertical: 6),
               child: Text(
-                'Price x ( S - B - D )',
+                'Price x ( S - B )',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: Colors.white),
               ),
@@ -135,6 +144,16 @@ class SalesKioskView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
                     detail.voucher?.name ?? "",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                )),
+            TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    detail.damage.toString(),
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 12),
                   ),
@@ -181,6 +200,7 @@ class SalesKioskView extends StatelessWidget {
           children: [
             Container(),
             Container(),
+            Container(),
             const TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
                 child: Text(
@@ -203,6 +223,7 @@ class SalesKioskView extends StatelessWidget {
               border: const Border(left: BorderSide(), right: BorderSide()),
               color: Theme.of(context).primaryColorDark),
           children: [
+            Container(),
             Container(),
             Container(),
             TableCell(
@@ -231,6 +252,7 @@ class SalesKioskView extends StatelessWidget {
           children: [
             Container(),
             Container(),
+            Container(),
             const TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
                 child: Text(
@@ -255,6 +277,7 @@ class SalesKioskView extends StatelessWidget {
               border: const Border(left: BorderSide(), right: BorderSide()),
               color: Theme.of(context).primaryColorDark),
           children: [
+            Container(),
             Container(),
             Container(),
             const TableCell(
@@ -288,6 +311,7 @@ class SalesKioskView extends StatelessWidget {
         children: [
           Container(),
           Container(),
+          Container(),
           const TableCell(
               verticalAlignment: TableCellVerticalAlignment.middle,
               child: Text(
@@ -319,6 +343,7 @@ class SalesKioskView extends StatelessWidget {
             children: [
               Container(),
               Container(),
+              Container(),
               const TableCell(
                   verticalAlignment: TableCellVerticalAlignment.middle,
                   child: Text(
@@ -347,6 +372,7 @@ class SalesKioskView extends StatelessWidget {
                     top: BorderSide(color: Colors.white)),
                 color: Theme.of(context).primaryColorDark),
             children: [
+              Container(),
               Container(),
               Container(),
               const TableCell(
@@ -439,8 +465,9 @@ class SalesKioskView extends StatelessWidget {
                       Table(
                         columnWidths: const {
                           0: FixedColumnWidth(60),
-                          1: FixedColumnWidth(50),
-                          3: FixedColumnWidth(80)
+                          1: FixedColumnWidth(30),
+                          2: FixedColumnWidth(50),
+                          4: FixedColumnWidth(80)
                         },
                         children: salesDetail,
                       ),
@@ -516,7 +543,7 @@ class SalesKioskView extends StatelessWidget {
                     } else if (state is UpdateWhatsappSuccess) {
                       EasyLoading.showSuccess('Whatsapp number saved');
                       sendWhatsapp(context, state.kiosk.whatsapp!,
-                          "${dateFormat.format(sales.date ?? DateTime.now())} Rp. ${numberFormat.format(sales.total)}");
+                          "${dateFormat.format(sales.date!=null?sales.date!.toLocal():DateTime.now())} Rp. ${numberFormat.format(sales.total)}");
                     }
                   },
                   child: Align(
@@ -549,7 +576,7 @@ class SalesKioskView extends StatelessWidget {
                                     )).then((result) {
                               if (result == 1) {
                                 sendWhatsapp(context, kiosk.whatsapp!,
-                                    "${dateFormat.format(sales.date ?? DateTime.now())} Rp. ${numberFormat.format(sales.total)}");
+                                    "${dateFormat.format(sales.date!=null?sales.date!.toLocal() : DateTime.now())} Rp. ${numberFormat.format(sales.total)}");
                               } else if (result == 2) {
                                 changeNumber(
                                     context: context, whatsapp: kiosk.whatsapp);

@@ -14,4 +14,5 @@ export 'src/capital_repository.dart';
 export 'src/booster_repository.dart';
 export 'src/deposit_repository.dart';
 export 'src/asset_repository.dart';
+export 'src/profit_repository.dart';
 export 'src/model/model.dart';

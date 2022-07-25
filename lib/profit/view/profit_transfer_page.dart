@@ -5,20 +5,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:iVoucher/capital/capital.dart';
-import 'package:iVoucher/constant/app_constant.dart';
+import 'package:iVoucher/profit/profit.dart';
 import 'package:iVoucher/constant/function.dart';
 import 'package:intl/intl.dart';
 
-class CapitalAdd extends StatelessWidget {
-  const CapitalAdd({
+class ProfitTransferPage extends StatelessWidget {
+  const ProfitTransferPage({
     Key? key,
   }) : super(key: key);
 
   static Route<bool> route() {
     return MaterialPageRoute<bool>(
-      settings: const RouteSettings(name: '/capital_add'),
-      builder: (context) => const CapitalAdd(),
+      settings: const RouteSettings(name: '/profit_transfer'),
+      builder: (context) => const ProfitTransferPage(),
     );
   }
 
@@ -26,12 +25,12 @@ class CapitalAdd extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Capital"),
+        title: const Text("Profit Transfer"),
       ),
       body: BlocProvider(
         create: (context) =>
-            CapitalBloc()..add(const GetGroups(ModuleConstant.capitalAdd)),
-        child: const SingleChildScrollView(child: _CapitalAddView()),
+            ProfitBloc()..add(GetGroups()),
+        child: const SingleChildScrollView(child: _ProfitTransferView()),
       ),
     );
   }
@@ -40,8 +39,8 @@ class CapitalAdd extends StatelessWidget {
 String? uid;
 String? path;
 
-class _CapitalAddView extends StatelessWidget {
-  const _CapitalAddView({
+class _ProfitTransferView extends StatelessWidget {
+  const _ProfitTransferView({
     Key? key,
   }) : super(key: key);
 
@@ -54,7 +53,7 @@ class _CapitalAddView extends StatelessWidget {
           key: formKey,
           child: Column(
             children: [
-              BlocBuilder<CapitalBloc, CapitalState>(
+              BlocBuilder<ProfitBloc, ProfitState>(
                 buildWhen: (previous, current) =>
                     current is GetGroupLoading ||
                     current is GetGroupSuccess ||
@@ -79,7 +78,7 @@ class _CapitalAddView extends StatelessWidget {
                             .toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            context.read<CapitalBloc>()
+                            context.read<ProfitBloc>()
                               ..add(GetInvestor(value))
                               ..add(GetLastClosing(groupName: value));
                           }
@@ -87,7 +86,7 @@ class _CapitalAddView extends StatelessWidget {
                         validator: FormBuilderValidators.required(),
                       );
                     } else if (state.group.isNotEmpty) {
-                      context.read<CapitalBloc>()
+                      context.read<ProfitBloc>()
                         ..add(GetInvestor(state.group[0]))
                         ..add(GetLastClosing(groupName: state.group[0]));
                       return FormBuilderTextField(
@@ -106,7 +105,7 @@ class _CapitalAddView extends StatelessWidget {
                   }
                 },
               ),
-              BlocBuilder<CapitalBloc, CapitalState>(
+              BlocBuilder<ProfitBloc, ProfitState>(
                 buildWhen: (previous, current) =>
                     current is GetInvestorLoading ||
                     current is GetInvestorSuccess ||
@@ -156,7 +155,7 @@ class _CapitalAddView extends StatelessWidget {
                   }
                 },
               ),
-              BlocBuilder<CapitalBloc, CapitalState>(
+              BlocBuilder<ProfitBloc, ProfitState>(
                 buildWhen: (previous, current) =>
                     current is GetLastClosingLoading ||
                     current is GetLastClosingSuccess ||
@@ -207,27 +206,27 @@ class _CapitalAddView extends StatelessWidget {
                 decoration: const InputDecoration(label: Text('Total')),
                 validator: FormBuilderValidators.required(),
               ),
-              BlocConsumer<CapitalBloc, CapitalState>(
+              BlocConsumer<ProfitBloc, ProfitState>(
                 listenWhen: (previous, current) =>
                     current is PickReceiptStart ||
-                    current is AddCapitalLoading ||
-                    current is AddCapitalFailed ||
-                    current is AddCapitalSuccess,
+                    current is ProfitTransferLoading ||
+                    current is ProfitTransferFailed ||
+                    current is ProfitTransferSuccess,
                 buildWhen: (previous, current) => current is PickReceiptDone,
                 listener: (context, state) {
                   if (state is PickReceiptStart) {
                     showImageDialog(context, (croppedFile) {
                       context
-                          .read<CapitalBloc>()
-                          .add(CapitalReceiptRetrieved(croppedFile.path));
+                          .read<ProfitBloc>()
+                          .add(ProfitTransferReceiptRetrieved(croppedFile.path));
                     });
-                  } else if (state is AddCapitalLoading) {
-                    EasyLoading.show(status: "Adding Capital");
-                  } else if (state is AddCapitalFailed) {
+                  } else if (state is ProfitTransferLoading) {
+                    EasyLoading.show(status: "Transferring Profit");
+                  } else if (state is ProfitTransferFailed) {
                     EasyLoading.showError(state.message);
                   }
-                  if (state is AddCapitalSuccess) {
-                    EasyLoading.showSuccess("Capital Added");
+                  if (state is ProfitTransferSuccess) {
+                    EasyLoading.showSuccess("Profit Transferred");
                     Navigator.of(context).pop(true);
                   }
                 },
@@ -239,14 +238,14 @@ class _CapitalAddView extends StatelessWidget {
                         children: [
                           InkWell(
                               onTap: () => context
-                                  .read<CapitalBloc>()
-                                  .add(PickCapitalReceipt()),
+                                  .read<ProfitBloc>()
+                                  .add( PickProfitTransferReceipt()),
                               child: Image.file(File(path!))),
                           ElevatedButton(
                               onPressed: () {
                                 if (formKey.currentState?.saveAndValidate() ==
                                     true) {
-                                  context.read<CapitalBloc>().add(AddCapital(
+                                  context.read<ProfitBloc>().add(ProfitTransfer(
                                       uid: uid!,
                                       file: File(path!),
                                       total: int.parse(formKey
@@ -267,8 +266,8 @@ class _CapitalAddView extends StatelessWidget {
                   return ElevatedButton(
                       onPressed: () {
                         context
-                            .read<CapitalBloc>()
-                            .add(PickCapitalReceipt());
+                            .read<ProfitBloc>()
+                            .add(PickProfitTransferReceipt());
                       },
                       child: const Text("Receipt"));
                 },

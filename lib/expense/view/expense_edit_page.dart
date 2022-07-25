@@ -173,7 +173,7 @@ class _ExpenseEditView extends StatelessWidget {
                       )
                     : FormBuilderTextField(
                         name: 'date',
-                        initialValue: dateFormat.format(expense!.date),
+                        initialValue: dateFormat.format(expense!.date.toLocal()),
                         readOnly: true,
                         decoration: const InputDecoration(
                             label: Text('Date'), isDense: true),

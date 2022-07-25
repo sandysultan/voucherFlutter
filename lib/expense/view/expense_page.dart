@@ -401,7 +401,7 @@ class _ExpenseList extends StatelessWidget {
             );
           },
           title: Text(
-              '${dateFormat.format(item.date)} Rp. ${numberFormat.format(item.total)}'),
+              '${dateFormat.format(item.date.toLocal())} Rp. ${numberFormat.format(item.total)}'),
           subtitle:
               Text('${item.expenseType!.expenseTypeName}\n${item.description}'),
           trailing: item.expenseType?.asset == true

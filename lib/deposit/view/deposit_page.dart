@@ -5,6 +5,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:iVoucher/deposit/deposit.dart';
 import 'package:iVoucher/widget/month_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:repository/src/model/deposit.dart';
 
 class DepositPage extends StatelessWidget {
@@ -81,17 +82,21 @@ class _DepositView extends StatelessWidget {
             },
           ),
         ),
-        MonthPicker(onChanged: (value) {
-          dateTime = value;
-          if (groupName != null) {
-            context
-                .read<DepositBloc>()
-                .add(GetDeposit(groupName!, dateTime.year, dateTime.month));
-          }
-        }),
-        Expanded(child: BlocBuilder<DepositBloc, DepositState>(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: MonthPicker(onChanged: (value) {
+            dateTime = value;
+            if (groupName != null) {
+              context
+                  .read<DepositBloc>()
+                  .add(GetDeposit(groupName!, dateTime.year, dateTime.month));
+            }
+          }),
+        ),
+        Expanded(
+            child: BlocBuilder<DepositBloc, DepositState>(
           buildWhen: (previous, current) =>
-          current is GetDepositLoading ||
+              current is GetDepositLoading ||
               current is GetDepositSuccess ||
               current is GetDepositFailed,
           builder: (context, state) {
@@ -101,7 +106,10 @@ class _DepositView extends StatelessWidget {
               );
             } else if (state is GetDepositFailed) {
               return Center(
-                child: Text(state.message,style: TextStyle(color: Theme.of(context).errorColor),),
+                child: Text(
+                  state.message,
+                  style: TextStyle(color: Theme.of(context).errorColor),
+                ),
               );
             } else if (state is GetDepositSuccess) {
               return _TabView(state.deposits);
@@ -117,7 +125,9 @@ class _DepositView extends StatelessWidget {
 
 class _TabView extends StatefulWidget {
   const _TabView(this.deposits);
+
   final List<Deposit> deposits;
+
   @override
   State<_TabView> createState() => _TabViewState();
 }
@@ -125,14 +135,30 @@ class _TabView extends StatefulWidget {
 class _TabViewState extends State<_TabView>
     with SingleTickerProviderStateMixin {
   late TabController _controller;
-  int total=0;
+  final NumberFormat _numberFormat = NumberFormat('#,###');
+  int total = 0;
+  final Map<int, Deposit> expenses = {};
+  final Map<String?, Deposit> investors = {};
 
   @override
   void initState() {
     _controller = TabController(length: 2, vsync: this);
-    for(Deposit deposit in widget.deposits){
-      if(deposit.description!='[CLOSING]') {
-        total+=deposit.total;
+    for (Deposit deposit in widget.deposits) {
+      if (deposit.description != '[CLOSING]') {
+        total += deposit.total;
+        int expenseKey = deposit.expenseId??(deposit.description=='[OPENING]'?0:-1);
+        if (expenses.containsKey(expenseKey)) {
+          expenses[expenseKey] = deposit.copy(
+              total: expenses[expenseKey]!.total + deposit.total);
+        } else {
+          expenses[expenseKey] = deposit;
+        }
+        if (investors.containsKey(deposit.uid)) {
+          investors[deposit.uid] = deposit.copy(
+              total: investors[deposit.uid]!.total + deposit.total);
+        } else {
+          investors[deposit.uid] = deposit;
+        }
       }
     }
     super.initState();
@@ -159,16 +185,36 @@ class _TabViewState extends State<_TabView>
             child: TabBarView(
           controller: _controller,
           children: [
-            _ExpenseView(),
-            _InvestorView(),
+            _ExpenseView(
+                deposits:
+                    expenses.entries.map<Deposit>((e) => e.value).toList()),
+            _InvestorView(
+                deposits:
+                    investors.entries.map<Deposit>((e) => e.value).toList()),
           ],
         )),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Total : Rp. '),
+                Text(_numberFormat.format(total))
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
 }
 
 class _ExpenseView extends StatefulWidget {
+  const _ExpenseView({Key? key, required this.deposits});
+
+  final List<Deposit> deposits;
+
   @override
   State<_ExpenseView> createState() => _ExpenseViewState();
 }
@@ -178,7 +224,18 @@ class _ExpenseViewState extends State<_ExpenseView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return const Placeholder();
+    NumberFormat numberFormat = NumberFormat("#,###");
+    DateFormat dateFormat = DateFormat("d MMMM yyyy");
+    return ListView.separated(itemBuilder: (context, index) => ListTile(
+      isThreeLine: true,
+      title: Text(dateFormat.format(widget.deposits[index].date.toLocal())),
+      subtitle: Text(
+          '${(widget.deposits[index].description??"")}\nRp. ${numberFormat.format(widget.deposits[index].total)}'),
+
+    ),
+        separatorBuilder: (context, index) =>
+        const Divider(),
+        itemCount: widget.deposits.length);
   }
 
   @override
@@ -186,6 +243,10 @@ class _ExpenseViewState extends State<_ExpenseView>
 }
 
 class _InvestorView extends StatefulWidget {
+  final List<Deposit> deposits;
+
+  const _InvestorView({Key? key, required this.deposits}) : super(key: key);
+
   @override
   State<_InvestorView> createState() => _InvestorViewState();
 }
@@ -195,10 +256,18 @@ class _InvestorViewState extends State<_InvestorView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return const Placeholder();
+    NumberFormat numberFormat = NumberFormat("#,###");
+    return ListView.separated(itemBuilder: (context, index) => ListTile(
+      title: Text(widget.deposits[index].user!.name),
+      subtitle: Text(
+          'Rp. ${numberFormat.format(widget.deposits[index].total)}'),
+
+    ),
+        separatorBuilder: (context, index) =>
+        const Divider(),
+        itemCount: widget.deposits.length);
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
 }

@@ -63,7 +63,6 @@ class AddCapital extends CapitalEvent {
 }
 
 class PickCapitalReceipt extends CapitalEvent {
-  const PickCapitalReceipt();
 }
 
 class CapitalReceiptRetrieved extends CapitalEvent {

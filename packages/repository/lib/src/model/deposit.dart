@@ -30,4 +30,24 @@ class Deposit {
       _$DepositFromJson(json);
 
   Map<String, dynamic> toJson() => _$DepositToJson(this);
+
+  Deposit copy({int? id,
+  String? groupName,
+  String? uid,
+  DateTime? date,
+  int? total,
+  String? description,
+  int? expenseId,
+  User? user,}) {
+    return Deposit(
+      id: id ?? this.id,
+      groupName: groupName ?? this.groupName,
+      uid: uid ?? this.uid,
+      date: date ?? this.date,
+      total: total ?? this.total,
+      description: description ?? this.description,
+      expenseId: expenseId ?? this.expenseId,
+      user: user ?? this.user,
+    );
+  }
 }

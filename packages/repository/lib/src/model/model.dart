@@ -47,3 +47,6 @@ export 'asset_response.dart';
 export 'deposit_response.dart';
 export 'deposit.dart';
 export 'asset.dart';
+export 'profit_response.dart';
+export 'profit.dart';
+export 'profit_transfer_response.dart';

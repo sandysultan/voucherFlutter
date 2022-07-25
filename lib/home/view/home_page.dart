@@ -8,10 +8,12 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:http_client/http_client.dart';
+import 'package:iVoucher/asset/asset.dart';
 import 'package:iVoucher/booster/booster.dart';
 import 'package:iVoucher/capital/capital.dart';
 import 'package:iVoucher/closing/view/closing_page.dart';
 import 'package:iVoucher/deposit/deposit.dart';
+import 'package:iVoucher/profit/profit.dart';
 import 'package:local_repository/local_repository.dart';
 import 'package:logger/logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -38,6 +40,7 @@ const int actionActiveKioskOnly = 5;
 const int actionAddFundRequest = 6;
 const int actionAddCapital = 7;
 const int actionAddBooster = 8;
+const int actionProfitTransfer = 9;
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -234,7 +237,10 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         _activePage = const DepositPage();
         break;
       case ModuleConstant.asset:
-        _activePage = const DepositPage();
+        _activePage = const AssetPage();
+        break;
+      case ModuleConstant.profit:
+        _activePage = const ProfitPage();
         break;
       default:
         _activePage = const NotificationPage();
@@ -286,6 +292,18 @@ class _HomeScaffoldState extends State<HomeScaffold> {
               context.read<HomeBloc>().add(const AppbarAction(actionAddBooster));
               context.read<HomeBloc>().add(const AppbarAction(actionNothing));
             }, icon: const Icon(Icons.add))
+          ];
+        } else {
+          return [];
+        }
+      case ModuleConstant.profit:
+
+        if(_modules?.contains(ModuleConstant.profitTransfer)==true) {
+          return [
+            IconButton(onPressed: (){
+              context.read<HomeBloc>().add(const AppbarAction(actionProfitTransfer));
+              context.read<HomeBloc>().add(const AppbarAction(actionNothing));
+            }, icon: const Icon(Icons.money))
           ];
         } else {
           return [];
@@ -360,6 +378,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         return 'Deposit';
       case ModuleConstant.asset:
         return 'Asset';
+      case ModuleConstant.profit:
+        return 'Profit';
     }
     return 'iVoucher';
   }
@@ -656,6 +676,14 @@ class DrawerListView extends StatelessWidget {
         title: const Text('Asset'),
         onTap: () async {
           onModuleChanged(ModuleConstant.asset);
+        },
+      ));
+    }
+    if (modules.contains(ModuleConstant.profit)) {
+      list.add(ListTile(
+        title: const Text('Profit'),
+        onTap: () async {
+          onModuleChanged(ModuleConstant.profit);
         },
       ));
     }

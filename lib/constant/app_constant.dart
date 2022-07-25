@@ -33,4 +33,6 @@ class ModuleConstant{
   static const boosterDelete='boosterDelete';
   static const deposit='deposit';
   static const asset='asset';
+  static const profit='profit';
+  static const profitTransfer='profitTransfer';
 }
