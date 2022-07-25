@@ -35,4 +35,5 @@ class ModuleConstant{
   static const asset='asset';
   static const profit='profit';
   static const profitTransfer='profitTransfer';
+  static const profitCapital='profitCapital';
 }

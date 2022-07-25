@@ -41,6 +41,7 @@ const int actionAddFundRequest = 6;
 const int actionAddCapital = 7;
 const int actionAddBooster = 8;
 const int actionProfitTransfer = 9;
+const int actionProfitCapital = 10;
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -297,17 +298,20 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           return [];
         }
       case ModuleConstant.profit:
-
+        List<IconButton> buttons=[];
         if(_modules?.contains(ModuleConstant.profitTransfer)==true) {
-          return [
-            IconButton(onPressed: (){
-              context.read<HomeBloc>().add(const AppbarAction(actionProfitTransfer));
-              context.read<HomeBloc>().add(const AppbarAction(actionNothing));
-            }, icon: const Icon(Icons.money))
-          ];
-        } else {
-          return [];
+          buttons.add(IconButton(onPressed: (){
+            context.read<HomeBloc>().add(const AppbarAction(actionProfitTransfer));
+            context.read<HomeBloc>().add(const AppbarAction(actionNothing));
+          }, icon: const Icon(Icons.account_balance_wallet_rounded)));
         }
+        if(_modules?.contains(ModuleConstant.profitCapital)==true) {
+          buttons.add(IconButton(onPressed: (){
+            context.read<HomeBloc>().add(const AppbarAction(actionProfitCapital));
+            context.read<HomeBloc>().add(const AppbarAction(actionNothing));
+          }, icon: const Icon(Icons.money)));
+        }
+        return buttons;
       case ModuleConstant.sale:
         return [
           PopupMenuButton<int>(

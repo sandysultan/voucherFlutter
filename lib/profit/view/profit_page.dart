@@ -33,6 +33,8 @@ class _AssetView extends StatelessWidget {
       listener: (context, state) {
         if (state is AppBarClicked && state.idAction == actionProfitTransfer) {
           Navigator.of(context).push(ProfitTransferPage.route());
+        }else if (state is AppBarClicked && state.idAction == actionProfitCapital) {
+          Navigator.of(context).push(ProfitCapitalPage.route());
         }
       },
   child: Column(
