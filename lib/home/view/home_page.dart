@@ -303,13 +303,13 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           buttons.add(IconButton(onPressed: (){
             context.read<HomeBloc>().add(const AppbarAction(actionProfitTransfer));
             context.read<HomeBloc>().add(const AppbarAction(actionNothing));
-          }, icon: const Icon(Icons.account_balance_wallet_rounded)));
+          }, icon: const Icon(Icons.account_balance_wallet_rounded),tooltip: 'Withdraw',));
         }
         if(_modules?.contains(ModuleConstant.profitCapital)==true) {
           buttons.add(IconButton(onPressed: (){
             context.read<HomeBloc>().add(const AppbarAction(actionProfitCapital));
             context.read<HomeBloc>().add(const AppbarAction(actionNothing));
-          }, icon: const Icon(Icons.money)));
+          }, icon: const Icon(Icons.money),tooltip: 'Convert to Capital',));
         }
         return buttons;
       case ModuleConstant.sale:

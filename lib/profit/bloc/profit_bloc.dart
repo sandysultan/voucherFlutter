@@ -14,6 +14,7 @@ import 'package:repository/repository.dart';
 import 'package:repository/repository.dart' as rep;
 
 part 'profit_event.dart';
+
 part 'profit_state.dart';
 
 var _logger = Logger();
@@ -27,16 +28,51 @@ class ProfitBloc extends Bloc<ProfitEvent, ProfitState> {
     on<PickProfitTransferReceipt>(_pickProfitTransferReceipt);
     on<ProfitTransferReceiptRetrieved>(_profitTransferReceiptRetrieved);
     on<ProfitTransfer>(_profitTransfer);
+    on<ConvertProfit>(_convertProfit);
   }
 
-  Future<void> _profitTransfer(ProfitTransfer event, Emitter<ProfitState> emit) async {
+  Future<void> _convertProfit(
+      ConvertProfit event, Emitter<ProfitState> emit) async {
+    emit(ConvertProfitLoading());
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken(true);
+    if (token == null) {
+      emit(const ConvertProfitFailed('Please re-login'));
+    } else {
+      ProfitRepository repository =
+          ProfitRepository(HttpClient.getClient(token: token));
+      await repository
+          .convertProfit(profit: Profit(
+        uid: event.uid,
+        date: event.date,
+        groupName: event.groupName,
+        total: event.total,)
+      )
+          .then((response) async {
+        if (response?.status == 1) {
+          emit(ConvertProfitSuccess());
+        } else {
+          emit(ConvertProfitFailed(response?.message ?? "Server Error"));
+        }
+      }).catchError((error, stack) {
+        _logger.e(error);
+
+        if (!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack);
+        }
+        emit(ProfitTransferFailed(error.toString()));
+      });
+    }
+  }
+
+  Future<void> _profitTransfer(
+      ProfitTransfer event, Emitter<ProfitState> emit) async {
     emit(ProfitTransferLoading());
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken(true);
     if (token == null) {
       emit(const ProfitTransferFailed('Please re-login'));
     } else {
       ProfitRepository repository =
-      ProfitRepository(HttpClient.getClient(token: token));
+          ProfitRepository(HttpClient.getClient(token: token));
       await repository
           .profitTransfer(
         Profit(
@@ -49,7 +85,7 @@ class ProfitBloc extends Bloc<ProfitEvent, ProfitState> {
           .then((response) async {
         if (response?.status == 1) {
           await repository
-              .uploadReceipt(response!.profit.id!,event.file)
+              .uploadReceipt(response!.profit.id!, event.file)
               .then((response2) async {
             if (response2?.status == 1) {
               emit(ProfitTransferSuccess(response.profit));
@@ -83,35 +119,35 @@ class ProfitBloc extends Bloc<ProfitEvent, ProfitState> {
     emit(PickReceiptStart());
   }
 
-
   Future<void> _profitTransferReceiptRetrieved(
       ProfitTransferReceiptRetrieved event, Emitter<ProfitState> emit) async {
     emit(PickReceiptDone(event.path));
   }
 
-  Future<void> _getLastClosing(GetLastClosing event, Emitter<ProfitState> emit) async {
+  Future<void> _getLastClosing(
+      GetLastClosing event, Emitter<ProfitState> emit) async {
     emit(GetLastClosingLoading());
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    if(token==null){
+    if (token == null) {
       emit(const GetLastClosingFailed('Authentication Failed'));
-    }else {
-      ClosingRepository repository = ClosingRepository(HttpClient.getClient(token: token));
-      await repository.getLastClosing(groupName:event.groupName)
-          .then((value) {
+    } else {
+      ClosingRepository repository =
+          ClosingRepository(HttpClient.getClient(token: token));
+      await repository.getLastClosing(groupName: event.groupName).then((value) {
         if (value?.status == 1) {
           emit(GetLastClosingSuccess(value!.closing));
         } else {
-          emit(GetLastClosingFailed(value?.message??"Server error"));
+          emit(GetLastClosingFailed(value?.message ?? "Server error"));
         }
       }).catchError((error, stack) {
         _logger.e(error);
-        if(!kIsWeb) {
+        if (!kIsWeb) {
           FirebaseCrashlytics.instance.recordError(error, stack);
         }
 
-        if(error is DioError){
+        if (error is DioError) {
           emit(GetLastClosingFailed(HttpClient.getDioErrorMessage(error)));
-        }else {
+        } else {
           emit(GetLastClosingFailed(error.toString()));
         }
       });
@@ -126,7 +162,7 @@ class ProfitBloc extends Bloc<ProfitEvent, ProfitState> {
       emit(const GetInvestorFailed('Authentication Failed'));
     } else {
       CapitalRepository? repository =
-      CapitalRepository(HttpClient.getClient(token: token));
+          CapitalRepository(HttpClient.getClient(token: token));
       await repository.getInvestors(groupName: event.groupName).then((value) {
         if (value?.status == 1) {
           emit(GetInvestorSuccess(value!.users));
@@ -154,10 +190,10 @@ class ProfitBloc extends Bloc<ProfitEvent, ProfitState> {
       emit(const GetProfitFailed('Authentication Failed'));
     } else {
       ProfitRepository? repository =
-      ProfitRepository(HttpClient.getClient(token: token));
+          ProfitRepository(HttpClient.getClient(token: token));
       await repository
           .getProfits(
-          groupName: event.groupName, year: event.year, month: event.month)
+              groupName: event.groupName, year: event.year, month: event.month)
           .then((value) {
         if (value?.status == 1) {
           emit(GetProfitSuccess(value!.profits));
@@ -185,7 +221,7 @@ class ProfitBloc extends Bloc<ProfitEvent, ProfitState> {
       emit(const GetGroupFailed('Authentication Failed'));
     } else {
       UserRepository? userRepository =
-      UserRepository(HttpClient.getClient(token: token));
+          UserRepository(HttpClient.getClient(token: token));
       await userRepository.getGroup(ModuleConstant.profit).then((value) {
         if (value?.status == 1) {
           emit(GetGroupSuccess(value!.groups));

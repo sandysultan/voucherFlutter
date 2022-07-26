@@ -18,6 +18,11 @@ abstract class ProfitRepository {
     @Query('month') required int month,
   });
 
+  @POST('/profit/convert')
+  Future<BaseResponse?>  convertProfit({
+    @Body() required Profit profit,
+  });
+
   @POST('/profit')
   Future<ProfitTransferResponse?>  profitTransfer(@Body() Profit body,);
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:iVoucher/profit/profit.dart';
@@ -34,6 +35,7 @@ class _ProfitCapitalView extends StatelessWidget {
   Widget build(BuildContext context) {
     var formKey = GlobalKey<FormBuilderState>();
     String? uid;
+    DateTime dateTime=DateTime.now();
     return FormBuilder(
         key: formKey,
         child: Column(
@@ -63,17 +65,17 @@ class _ProfitCapitalView extends StatelessWidget {
                           .toList(),
                       onChanged: (value) {
                         if (value != null) {
-                          context.read<ProfitBloc>().add(GetInvestor(
+                          context.read<ProfitBloc>()..add(GetInvestor(
                                 value,
-                              ));
+                              ))..add(GetLastClosing(groupName: value));
                         }
                       },
                       validator: FormBuilderValidators.required(),
                     );
                   } else if (state.group.isNotEmpty) {
-                    context.read<ProfitBloc>().add(GetInvestor(
+                    context.read<ProfitBloc>()..add(GetInvestor(
                           state.group[0],
-                        ));
+                        ))..add(GetLastClosing(groupName: state.group[0]));
                     return FormBuilderTextField(
                       name: 'group',
                       decoration: const InputDecoration(label: Text('Group')),
@@ -81,12 +83,67 @@ class _ProfitCapitalView extends StatelessWidget {
                       initialValue: state.group[0],
                     );
                   } else {
-                    return Container();
+                    return const Center(
+                      child: Text(
+                        "No group available for you to modify",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    );
                   }
                 } else {
                   return const Center(
                     child: CircularProgressIndicator(),
                   );
+                }
+              },
+            ),
+            BlocBuilder<ProfitBloc, ProfitState>(
+              buildWhen: (previous, current) =>
+              current is GetLastClosingLoading ||
+                  current is GetLastClosingSuccess ||
+                  current is GetLastClosingFailed,
+              builder: (context, state) {
+                if (state is GetLastClosingSuccess) {
+                  DateTime? minDate;
+                  if (state.closing != null) {
+                    minDate = DateTime(
+                        state.closing!.year, state.closing!.month + 1, 1);
+                  }
+                  return FormBuilderDateTimePicker(
+                    name: 'date',
+                    format: DateFormat('dd MMMM yyyy'),
+                    inputType: InputType.date,
+                    initialValue: DateTime.now(),
+                    onChanged: (value){
+                      if(value!=null) {
+                        dateTime=value;
+                      }
+                    },
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(),
+                          (value) {
+                        if (minDate != null) {
+                          if (value?.isBefore(minDate) == true) {
+                            return "Minimum date is ${DateFormat('dd MMMM yyyy').format(minDate)}";
+                          }
+                        }
+                        return null;
+                      }
+                    ]),
+                    decoration: const InputDecoration(
+                        label: Text('Date'), isDense: true),
+                  );
+                } else if (state is GetLastClosingFailed) {
+                  return Center(
+                    child: Text(
+                      state.message,
+                      style: TextStyle(color: Theme.of(context).errorColor),
+                    ),
+                  );
+                } else if (state is GetLastClosingLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else {
+                  return Container();
                 }
               },
             ),
@@ -148,46 +205,53 @@ class _ProfitCapitalView extends StatelessWidget {
             ),
             BlocListener<ProfitBloc, ProfitState>(
               listenWhen: (previous, current) =>
-              current is ConvertProfitLoading ||
+                  current is ConvertProfitLoading ||
                   current is ConvertProfitSuccess ||
                   current is ConvertProfitFailed,
-
-  listener: (context, state) {
-    //todo
-  },
-  child: ElevatedButton(
-                onPressed: () {
-                  if (formKey.currentState?.saveAndValidate() == true) {
-                    showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                              content: Text(
-                                  "Convert Rp. ${NumberFormat("#,###").format(int.parse(formKey.currentState!.value['total']))} profit to capital?"),
-                              actions: [
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text('Cancel')),
-                                TextButton(
-                                    onPressed: () {
-                                      context.read<ProfitBloc>().add(
-                                          ConvertProfit(
-                                              uid: uid!,
-                                              groupName: formKey
-                                                  .currentState!.value['group'],
-                                              total: int.parse(formKey
-                                                  .currentState!
-                                                  .value['total'])));
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Text('Yes')),
-                              ],
-                            ));
-                  }
-                },
-                child: const Text('Convert')),
-)
+              listener: (context, state) {
+                if (state is ConvertProfitLoading) {
+                  EasyLoading.show(status: "Converting");
+                } else if (state is ConvertProfitFailed) {
+                  EasyLoading.showError(state.message);
+                } else if (state is ConvertProfitSuccess) {
+                  EasyLoading.showSuccess("Profit converted");
+                  Navigator.of(context).pop(true);
+                }
+              },
+              child: ElevatedButton(
+                  onPressed: () {
+                    if (formKey.currentState?.saveAndValidate() == true) {
+                      showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                                content: Text(
+                                    "Convert Rp. ${NumberFormat("#,###").format(int.parse(formKey.currentState!.value['total']))} profit to capital?"),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Cancel')),
+                                  TextButton(
+                                      onPressed: () {
+                                        context.read<ProfitBloc>().add(
+                                            ConvertProfit(
+                                                uid: uid!,
+                                                groupName: formKey.currentState!
+                                                    .value['group'],
+                                                date: dateTime,
+                                                total: int.parse(formKey
+                                                    .currentState!
+                                                    .value['total'])));
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Yes')),
+                                ],
+                              ));
+                    }
+                  },
+                  child: const Text('Convert')),
+            )
           ],
         ));
   }

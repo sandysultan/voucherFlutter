@@ -17,12 +17,12 @@ class ProfitPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ProfitBloc()..add(GetGroups()),
-      child: _AssetView(),
+      child: _ProfitView(),
     );
   }
 }
 
-class _AssetView extends StatelessWidget {
+class _ProfitView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DateTime dateTime = DateTime.now();
@@ -32,9 +32,17 @@ class _AssetView extends StatelessWidget {
       listenWhen: (previous, current) => current is AppBarClicked,
       listener: (context, state) {
         if (state is AppBarClicked && state.idAction == actionProfitTransfer) {
-          Navigator.of(context).push(ProfitTransferPage.route());
+          Navigator.of(context).push(ProfitTransferPage.route()).then((value) {
+            if(value==true && groupName!=null){
+              context.read<ProfitBloc>().add(GetProfit(groupName!, dateTime.year, dateTime.month));
+            }
+          });
         }else if (state is AppBarClicked && state.idAction == actionProfitCapital) {
-          Navigator.of(context).push(ProfitCapitalPage.route());
+          Navigator.of(context).push(ProfitCapitalPage.route()).then((value) {
+            if(value==true && groupName!=null){
+              context.read<ProfitBloc>().add(GetProfit(groupName!, dateTime.year, dateTime.month));
+            }
+          });
         }
       },
   child: Column(

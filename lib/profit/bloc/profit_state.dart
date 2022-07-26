@@ -101,12 +101,7 @@ class ConvertProfitLoading extends ProfitState {
 }
 
 class ConvertProfitSuccess extends ProfitState {
-  final Closing? closing;
 
-  const ConvertProfitSuccess(this.closing);
-
-  @override
-  List<Object> get props => [if(closing!=null)[closing]];
 }
 
 class ConvertProfitFailed extends ProfitState {

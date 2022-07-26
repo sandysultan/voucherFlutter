@@ -76,11 +76,13 @@ class ProfitTransfer extends ProfitEvent {
 class ConvertProfit extends ProfitEvent{
   final String uid;
   final String groupName;
+  final DateTime date;
   final int total;
 
   const ConvertProfit({
     required this.uid,
     required this.groupName,
+    required this.date,
     required this.total,
   });
 
