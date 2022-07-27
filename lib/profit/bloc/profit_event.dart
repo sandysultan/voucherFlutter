@@ -40,12 +40,12 @@ class GetLastClosing extends ProfitEvent{
 
 
 class ProfitTransferReceiptRetrieved extends ProfitEvent {
-  final String path;
+  final CroppedFile croppedFile;
 
-  const ProfitTransferReceiptRetrieved(this.path);
+  const ProfitTransferReceiptRetrieved(this.croppedFile);
 
   @override
-  List<Object> get props => [path];
+  List<Object> get props => [croppedFile];
 }
 
 

@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
 import 'package:iVoucher/constant/app_constant.dart';
 import 'package:iVoucher/profit/profit.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
 import 'package:repository/repository.dart' as rep;
@@ -121,7 +122,7 @@ class ProfitBloc extends Bloc<ProfitEvent, ProfitState> {
 
   Future<void> _profitTransferReceiptRetrieved(
       ProfitTransferReceiptRetrieved event, Emitter<ProfitState> emit) async {
-    emit(PickReceiptDone(event.path));
+    emit(PickReceiptDone(event.croppedFile));
   }
 
   Future<void> _getLastClosing(

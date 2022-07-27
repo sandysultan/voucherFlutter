@@ -219,7 +219,7 @@ class _CapitalAddView extends StatelessWidget {
                     showImageDialog(context, (croppedFile) {
                       context
                           .read<CapitalBloc>()
-                          .add(CapitalReceiptRetrieved(croppedFile.path));
+                          .add(CapitalReceiptRetrieved(croppedFile));
                     });
                   } else if (state is AddCapitalLoading) {
                     EasyLoading.show(status: "Adding Capital");
@@ -233,8 +233,8 @@ class _CapitalAddView extends StatelessWidget {
                 },
                 builder: (context, state) {
                   if (state is PickReceiptDone) {
-                    if (path != state.path) {
-                      path = state.path;
+                    if (path != state.croppedFile.path) {
+                      path = state.croppedFile.path;
                       return Column(
                         children: [
                           InkWell(

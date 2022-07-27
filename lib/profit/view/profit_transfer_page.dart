@@ -218,7 +218,7 @@ class _ProfitTransferView extends StatelessWidget {
                     showImageDialog(context, (croppedFile) {
                       context
                           .read<ProfitBloc>()
-                          .add(ProfitTransferReceiptRetrieved(croppedFile.path));
+                          .add(ProfitTransferReceiptRetrieved(croppedFile));
                     });
                   } else if (state is ProfitTransferLoading) {
                     EasyLoading.show(status: "Transferring Profit");
@@ -232,8 +232,8 @@ class _ProfitTransferView extends StatelessWidget {
                 },
                 builder: (context, state) {
                   if (state is PickReceiptDone) {
-                    if (path != state.path) {
-                      path = state.path;
+                    if (path != state.croppedFile.path) {
+                      path = state.croppedFile.path;
                       return Column(
                         children: [
                           InkWell(

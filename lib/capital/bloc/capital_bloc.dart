@@ -7,6 +7,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http_client/http_client.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:logger/logger.dart';
 import 'package:repository/repository.dart';
 import 'package:repository/repository.dart' as rep;
@@ -65,7 +66,7 @@ class CapitalBloc extends Bloc<CapitalEvent, CapitalState> {
 
   Future<void> _capitalReceiptRetrieved(
       CapitalReceiptRetrieved event, Emitter<CapitalState> emit) async {
-    emit(PickReceiptDone(event.path));
+    emit(PickReceiptDone(event.croppedFile));
   }
 
   Future<void> _addCapital(AddCapital event, Emitter<CapitalState> emit) async {

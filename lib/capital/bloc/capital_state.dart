@@ -100,12 +100,12 @@ class PickReceiptStart extends CapitalState {
 }
 
 class PickReceiptDone extends CapitalState {
-  final String path;
+  final CroppedFile croppedFile;
 
-  const PickReceiptDone(this.path);
+  const PickReceiptDone(this.croppedFile);
 
   @override
-  List<Object> get props => [path];
+  List<Object> get props => [croppedFile];
 }
 
 class AddCapitalLoading extends CapitalState {

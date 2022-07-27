@@ -66,12 +66,12 @@ class PickCapitalReceipt extends CapitalEvent {
 }
 
 class CapitalReceiptRetrieved extends CapitalEvent {
-  final String path;
+  final CroppedFile croppedFile;
 
-  const CapitalReceiptRetrieved(this.path);
+  const CapitalReceiptRetrieved(this.croppedFile);
 
   @override
-  List<Object> get props => [path];
+  List<Object> get props => [croppedFile];
 }
 
 

@@ -136,10 +136,10 @@ class ProfitTransferFailed extends ProfitState {
 }
 
 class PickReceiptDone extends ProfitState {
-  final String path;
+  final CroppedFile croppedFile;
 
-  const PickReceiptDone(this.path);
+  const PickReceiptDone(this.croppedFile);
 
   @override
-  List<Object> get props => [path];
+  List<Object> get props => [croppedFile];
 }

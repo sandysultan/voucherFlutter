@@ -1,11 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../cropper/ui_helper.dart'
+if (dart.library.io) '../../cropper/mobile_ui_helper.dart'
+if (dart.library.html) '../../cropper/web_ui_helper.dart';
 
 showImageDialog(
     BuildContext context, Function(CroppedFile croppedFile) onImageReady) {
-  showDialog(
+  if(kIsWeb){
+    _pickFromGallery(context, onImageReady);
+  }else {
+    showDialog(
       context: context,
       builder: (_) => AlertDialog(
             title: const Text("Image Source"),
@@ -33,22 +40,31 @@ showImageDialog(
                   title: const Text('Gallery'),
                   leading: const Icon(Icons.image_search),
                   onTap: () {
-                    final ImagePicker picker = ImagePicker();
-                    picker
-                        .pickImage(source: ImageSource.gallery)
-                        .then((image) async {
-                      if (image != null) {
-                        _cropImage(context, image, onImageReady)
-                            .then((value) => Navigator.of(context).pop());
-                      } else {
-                        Navigator.of(context).pop();
-                      }
-                    });
+                    _pickFromGallery(context, onImageReady);
                   },
                 ),
               ],
             ),
           ));
+  }
+}
+
+void _pickFromGallery(BuildContext context, Function(CroppedFile croppedFile) onImageReady) {
+  final ImagePicker picker = ImagePicker();
+  picker
+      .pickImage(source: ImageSource.gallery)
+      .then((image) async {
+    if (image != null) {
+      _cropImage(context, image, onImageReady)
+          .then((value) {
+        if (!kIsWeb) {
+          Navigator.of(context).pop();
+        }
+      });
+    } else {
+      Navigator.of(context).pop();
+    }
+  });
 }
 
 Future<void> _cropImage(BuildContext context, XFile image,
@@ -61,15 +77,7 @@ Future<void> _cropImage(BuildContext context, XFile image,
       CropAspectRatioPreset.ratio4x3,
       CropAspectRatioPreset.ratio16x9
     ],
-    uiSettings: [
-      AndroidUiSettings(
-          toolbarTitle: 'Cropper',
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: false),
-      IOSUiSettings(
-        title: 'Cropper',
-      ),
-    ],
+    uiSettings: buildUiSettings(context),
   ).then((croppedFile) {
     if (croppedFile != null) {
       onImageReady(croppedFile);
