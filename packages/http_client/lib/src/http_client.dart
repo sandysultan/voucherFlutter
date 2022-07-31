@@ -13,7 +13,6 @@ class HttpClient{
      'https://ivoucher.my.id/devapi/';
 
   static bool debugServer=false;
-  // static const String server='https://ivoucher.my.id/api/';
 
   static setDev(bool dev){
     debugServer=dev;
